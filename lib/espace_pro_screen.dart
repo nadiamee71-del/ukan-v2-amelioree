@@ -32,7 +32,6 @@ import 'models/workout_step.dart';
 import 'coach_ia_premium/coach_ia_premium_page.dart';
 import 'foodscan_ia/foodscan_home_page.dart';
 import 'models/theme_notifier.dart';
-import 'coach_dashboard_page.dart';
 import 'components/messaging_icon_button.dart';
 import 'rooms_page.dart';
 import 'hard_challenge/hard_challenge_page.dart';
@@ -88,7 +87,12 @@ class AdvancedFeature {
 
 /// Écran centralisé "Mon Espace Avancé" - Hub pour toutes les fonctionnalités avancées/premium
 class EspaceProScreen extends StatefulWidget {
-  const EspaceProScreen({super.key});
+  /// Indique si l'utilisateur courant est un coach.
+  /// Le bouton « Passer en mode Coach » est masqué pour les clients afin
+  /// d'empêcher tout contournement de rôle.
+  final bool isCoach;
+
+  const EspaceProScreen({super.key, this.isCoach = false});
 
   @override
   State<EspaceProScreen> createState() => _EspaceProScreenState();
@@ -572,9 +576,10 @@ class _EspaceProScreenState extends State<EspaceProScreen>
                               ),
                             ],
                           ),
-                          const SizedBox(height: 16),
-                          // Bouton Coach Mode
-                          _buildCoachModeButton(),
+                          // Le bouton « Passer en mode Coach » a été supprimé :
+                          // le coach arrive directement sur son Dashboard Coach
+                          // après connexion, et les clients ne doivent pas y
+                          // accéder (aucun contournement de rôle possible).
                         ],
                       ),
                     ),
@@ -647,72 +652,6 @@ class _EspaceProScreenState extends State<EspaceProScreen>
             ],
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildCoachModeButton() {
-    return Container(
-      decoration: BoxDecoration(
-        color: _primaryGold.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(_uniformBorderRadius),
-        border: Border.all(
-          color: _primaryGold.withOpacity(0.6),
-          width: 2,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: _primaryGold.withOpacity(0.15),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const CoachDashboardPage()),
-            );
-          },
-          borderRadius: BorderRadius.circular(14),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: _primaryGold.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Icon(Icons.sports, color: _primaryGold, size: 24),
-                ),
-                const SizedBox(width: 14),
-                const Expanded(
-                  child: Text(
-                    'Passer en mode Coach',
-                    style: TextStyle(
-                      color: _textLight,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 0.3,
-                    ),
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: _primaryGold.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Icon(Icons.arrow_forward_ios, color: _primaryGold, size: 16),
-                ),
-              ],
-            ),
-          ),
-        ),
       ),
     );
   }

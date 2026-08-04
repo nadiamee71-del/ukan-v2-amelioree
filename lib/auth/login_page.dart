@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:math' as math;
 import '../main.dart' show UkanHomeShell;
 import 'signup_role_page.dart';
@@ -86,13 +87,23 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     setState(() => _loading = true);
     
     await Future.delayed(const Duration(milliseconds: 800));
-    
+
+    // Relecture du rôle enregistré (clé partagée `fitpro_role`).
+    // Valeur inconnue/absente → secours 'client'.
+    String role = 'client';
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      role = prefs.getString('fitpro_role') == 'coach' ? 'coach' : 'client';
+    } catch (_) {
+      role = 'client';
+    }
+
     if (!mounted) return;
     setState(() => _loading = false);
     
     Navigator.of(context).pushReplacement(
       PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) => const UkanHomeShell(),
+        pageBuilder: (context, animation, secondaryAnimation) => UkanHomeShell(initialRole: role),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           return FadeTransition(
             opacity: animation,

@@ -19,6 +19,11 @@ class AppointmentsRepository extends ChangeNotifier {
 
   final List<Appointment> _appointments = [];
   final Map<String, CoachAvailability> _coachAvailabilities = {};
+
+  // Planning hebdomadaire + exceptions édités dans CoachAvailabilityPage.
+  // Source unique des créneaux réservables (via getAvailableSlotsForDay).
+  final Map<String, List<DayAvailability>> _weeklyByCoach = {};
+  final Map<String, List<AvailabilityException>> _availabilityExceptions = {};
   
   // Utilisateur actuel (DEMO)
   String _currentUserId = 'client_demo_1';
@@ -47,6 +52,17 @@ class AppointmentsRepository extends ChangeNotifier {
       defaultEndTime: TimeOfDay(hour: 20, minute: 0),
       slots: _generateWeekSlots('coach_2', now),
     );
+
+    // Planning hebdo + exceptions du coach courant (coach_1) — pilote le booking client
+    _weeklyByCoach['coach_1'] = _defaultWeekly();
+    _availabilityExceptions['coach_1'] = [
+      AvailabilityException(1, DateTime(2026, 8, 14),
+          kind: ExceptionKind.unavailable, allDay: true, reason: 'Jour férié'),
+      AvailabilityException(2, DateTime(2026, 8, 24),
+          kind: ExceptionKind.special, ranges: [TimeRange(9, 0, 12, 0)], reason: 'Créneau exceptionnel'),
+      AvailabilityException(3, DateTime(2026, 9, 1), end: DateTime(2026, 9, 5),
+          kind: ExceptionKind.vacation, allDay: true, reason: 'Vacances'),
+    ];
 
     // Créer des RDV et séances démo
     _appointments.addAll([
@@ -202,6 +218,37 @@ class AppointmentsRepository extends ChangeNotifier {
     return slots;
   }
 
+  List<DayAvailability> _defaultWeekly() => [
+    DayAvailability('Lundi', [TimeRange(9, 0, 12, 0), TimeRange(14, 0, 17, 0)]),
+    DayAvailability('Mardi', [TimeRange(9, 0, 17, 0)]),
+    DayAvailability('Mercredi', [TimeRange(9, 0, 17, 0)]),
+    DayAvailability('Jeudi', [TimeRange(10, 0, 18, 0)]),
+    DayAvailability('Vendredi', [TimeRange(9, 0, 12, 0), TimeRange(14, 0, 17, 0)]),
+    DayAvailability('Samedi', [TimeRange(9, 0, 13, 0)]),
+    DayAvailability('Dimanche', const [], enabled: false),
+  ];
+
+  /// Génère les créneaux d'un jour à partir du planning hebdo + exceptions.
+  List<AvailableSlot> _generateSlotsForDate(String coachId, DateTime day) {
+    final week = _weeklyByCoach[coachId];
+    if (week == null) return [];
+    final exceptions = _availabilityExceptions[coachId] ?? const [];
+    final ranges = availabilityRangesForDate(day, week, exceptions);
+    const slotMinutes = 60;
+    final slots = <AvailableSlot>[];
+    for (final r in ranges) {
+      var start = r.begin;
+      while (start + slotMinutes <= r.finish) {
+        final s = DateTime(day.year, day.month, day.day, start ~/ 60, start % 60);
+        final e = DateTime(day.year, day.month, day.day,
+            (start + slotMinutes) ~/ 60, (start + slotMinutes) % 60);
+        slots.add(AvailableSlot(start: s, end: e));
+        start += slotMinutes;
+      }
+    }
+    return slots;
+  }
+
   // ═══════════════════════════════════════════════════════════════════════════
   // GETTERS
   // ═══════════════════════════════════════════════════════════════════════════
@@ -280,15 +327,20 @@ class AppointmentsRepository extends ChangeNotifier {
 
   /// Obtenir les créneaux disponibles pour un coach à une date donnée
   List<AvailableSlot> getAvailableSlotsForDay(String coachId, DateTime day) {
-    final availability = _coachAvailabilities[coachId];
-    if (availability == null) return [];
-
-    // Filtrer les créneaux pour ce jour
-    final daySlots = availability.slots.where((slot) {
-      return slot.start.year == day.year &&
-             slot.start.month == day.month &&
-             slot.start.day == day.day;
-    }).toList();
+    // Priorité au planning hebdo + exceptions (édité dans CoachAvailabilityPage).
+    // Repli sur les créneaux démo statiques pour les coachs sans planning hebdo.
+    final List<AvailableSlot> daySlots;
+    if (_weeklyByCoach.containsKey(coachId)) {
+      daySlots = _generateSlotsForDate(coachId, day);
+    } else {
+      final availability = _coachAvailabilities[coachId];
+      if (availability == null) return [];
+      daySlots = availability.slots.where((slot) {
+        return slot.start.year == day.year &&
+               slot.start.month == day.month &&
+               slot.start.day == day.day;
+      }).toList();
+    }
 
     // Exclure les créneaux déjà réservés
     final bookedAppointments = getAppointmentsForDay(day, coachId: coachId)
@@ -462,6 +514,32 @@ class AppointmentsRepository extends ChangeNotifier {
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
+  // PLANNING HEBDOMADAIRE + EXCEPTIONS (CoachAvailabilityPage)
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  /// Planning hebdomadaire d'un coach (crée un planning par défaut si absent).
+  List<DayAvailability> getOrCreateWeekly(String coachId) {
+    return _weeklyByCoach.putIfAbsent(coachId, () => _defaultWeekly());
+  }
+
+  /// Exceptions de disponibilité d'un coach (lecture seule).
+  List<AvailabilityException> getAvailabilityExceptions(String coachId) {
+    return List.unmodifiable(_availabilityExceptions[coachId] ?? const []);
+  }
+
+  /// Enregistre le planning hebdomadaire (mémoire de session, non persistant sur disque).
+  void setWeeklyAvailability(String coachId, List<DayAvailability> week) {
+    _weeklyByCoach[coachId] = week.map((d) => d.copy()).toList();
+    notifyListeners();
+  }
+
+  /// Enregistre les exceptions de disponibilité (mémoire de session).
+  void setAvailabilityExceptions(String coachId, List<AvailabilityException> exceptions) {
+    _availabilityExceptions[coachId] = exceptions.map((e) => e.copy()).toList();
+    notifyListeners();
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
   // RAPPELS (DEMO)
   // ═══════════════════════════════════════════════════════════════════════════
 
@@ -508,6 +586,8 @@ class AppointmentsRepository extends ChangeNotifier {
   void reset() {
     _appointments.clear();
     _coachAvailabilities.clear();
+    _weeklyByCoach.clear();
+    _availabilityExceptions.clear();
     _initDemoData();
     notifyListeners();
   }

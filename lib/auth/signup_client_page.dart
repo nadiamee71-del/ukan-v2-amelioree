@@ -261,9 +261,9 @@ class _SignupClientPageState extends State<SignupClientPage> {
     if (!mounted) return;
     setState(() => _isLoading = false);
 
-    // Redirection vers le dashboard
+    // Redirection vers le dashboard (Client : arrivée directe sur le Dashboard utilisateur)
     Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (_) => const UkanHomeShell()),
+      MaterialPageRoute(builder: (_) => const UkanHomeShell(initialRole: 'client')),
       (route) => false,
     );
   }

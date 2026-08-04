@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user_profile.dart';
 import '../models/theme_notifier.dart';
 import '../models/units_notifier.dart';
@@ -600,7 +601,16 @@ class _SettingsPageState extends State<SettingsPage> {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton.icon(
-        onPressed: () {
+        onPressed: () async {
+          // Réinitialise l'état de session. On conserve `fitpro_role` afin que
+          // la reconnexion redirige vers le bon dashboard.
+          try {
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.setBool('fitpro_is_logged_in', false);
+          } catch (_) {
+            // Ignore : la déconnexion visuelle doit fonctionner malgré tout.
+          }
+          if (!context.mounted) return;
           Navigator.of(context).pushAndRemoveUntil(
             MaterialPageRoute(builder: (_) => const LoginPage()),
             (route) => false,

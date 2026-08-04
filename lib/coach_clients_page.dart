@@ -6,63 +6,7 @@ class CoachClientsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final clients = [
-      const CoachClient(
-        id: 'sarah',
-        name: 'Sarah',
-        age: 29,
-        goal: 'Perte de poids',
-        sessionsPerWeek: 3,
-        level: 'Intermédiaire',
-        currentWeight: 72,
-        targetWeight: 65,
-        status: 'Actif',
-      ),
-      const CoachClient(
-        id: 'mehdi',
-        name: 'Mehdi',
-        age: 26,
-        goal: 'Prise de masse',
-        sessionsPerWeek: 4,
-        level: 'Intermédiaire',
-        currentWeight: 70,
-        targetWeight: 78,
-        status: 'Actif',
-      ),
-      const CoachClient(
-        id: 'lina',
-        name: 'Lina',
-        age: 34,
-        goal: 'Remise en forme',
-        sessionsPerWeek: 2,
-        level: 'Débutante',
-        currentWeight: 60,
-        targetWeight: 58,
-        status: 'Actif',
-      ),
-      const CoachClient(
-        id: 'alex',
-        name: 'Alex',
-        age: 31,
-        goal: 'Perte de poids',
-        sessionsPerWeek: 3,
-        level: 'Avancé',
-        currentWeight: 85,
-        targetWeight: 75,
-        status: 'En pause',
-      ),
-      const CoachClient(
-        id: 'marie',
-        name: 'Marie',
-        age: 28,
-        goal: 'Prise de masse',
-        sessionsPerWeek: 5,
-        level: 'Avancé',
-        currentWeight: 65,
-        targetWeight: 72,
-        status: 'Nouveau',
-      ),
-    ];
+    final clients = CoachClientsData.demoClients;
 
     return Scaffold(
       backgroundColor: const Color(0xFF111111),
@@ -113,6 +57,78 @@ class CoachClientsPage extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Source unique des clients de démonstration du coach.
+///
+/// Réutilisée par la page « Mes clients » ET par le Dashboard Coach
+/// (compteur « Clients actifs »), afin d'éviter toute donnée dupliquée.
+/// Reste en mémoire (démo) : ces clients ne sont pas encore rattachés à un
+/// identifiant de coach ni persistés.
+class CoachClientsData {
+  const CoachClientsData._();
+
+  static const List<CoachClient> demoClients = [
+    CoachClient(
+      id: 'sarah',
+      name: 'Sarah',
+      age: 29,
+      goal: 'Perte de poids',
+      sessionsPerWeek: 3,
+      level: 'Intermédiaire',
+      currentWeight: 72,
+      targetWeight: 65,
+      status: 'Actif',
+    ),
+    CoachClient(
+      id: 'mehdi',
+      name: 'Mehdi',
+      age: 26,
+      goal: 'Prise de masse',
+      sessionsPerWeek: 4,
+      level: 'Intermédiaire',
+      currentWeight: 70,
+      targetWeight: 78,
+      status: 'Actif',
+    ),
+    CoachClient(
+      id: 'lina',
+      name: 'Lina',
+      age: 34,
+      goal: 'Remise en forme',
+      sessionsPerWeek: 2,
+      level: 'Débutante',
+      currentWeight: 60,
+      targetWeight: 58,
+      status: 'Actif',
+    ),
+    CoachClient(
+      id: 'alex',
+      name: 'Alex',
+      age: 31,
+      goal: 'Perte de poids',
+      sessionsPerWeek: 3,
+      level: 'Avancé',
+      currentWeight: 85,
+      targetWeight: 75,
+      status: 'En pause',
+    ),
+    CoachClient(
+      id: 'marie',
+      name: 'Marie',
+      age: 28,
+      goal: 'Prise de masse',
+      sessionsPerWeek: 5,
+      level: 'Avancé',
+      currentWeight: 65,
+      targetWeight: 72,
+      status: 'Nouveau',
+    ),
+  ];
+
+  /// Nombre de clients au statut « Actif ».
+  static int get activeCount =>
+      demoClients.where((c) => c.status == 'Actif').length;
 }
 
 class CoachClient {

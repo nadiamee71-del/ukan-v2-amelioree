@@ -1,13 +1,31 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'coach_clients_page.dart';
 import 'coach/programs/coach_programs_page.dart';
+import 'coach/profile/coach_public_profile_edit_page.dart';
+import 'coach/coach_session.dart';
 import 'features/appointments/unified_planning_page.dart';
-import 'features/appointments/coach_availability_editor.dart';
+import 'features/appointments/coach_availability_page.dart' show CoachAvailabilityPage;
 import 'features/appointments/appointments_repository.dart';
 import 'features/appointments/appointment_models.dart';
+import 'models/coach_directory.dart';
+import 'models/coach_programs.dart';
+import 'models/coach_content.dart';
+
+/// Avatar coach : gère un chemin d'asset ou un fichier local (photo éditée).
+ImageProvider? _coachAvatarProvider(String? path) {
+  if (path == null || path.isEmpty) return null;
+  if (path.startsWith('assets/')) return AssetImage(path);
+  return FileImage(File(path));
+}
 
 class CoachDashboardPage extends StatefulWidget {
-  const CoachDashboardPage({super.key});
+  /// Quand `true`, la page est affichée à l'intérieur d'un autre écran
+  /// (ex. onglet Accueil du coach) : on retire alors le Scaffold/AppBar
+  /// pour éviter une double barre d'application.
+  final bool embedded;
+
+  const CoachDashboardPage({super.key, this.embedded = false});
 
   @override
   State<CoachDashboardPage> createState() => _CoachDashboardPageState();
@@ -15,16 +33,28 @@ class CoachDashboardPage extends StatefulWidget {
 
 class _CoachDashboardPageState extends State<CoachDashboardPage> {
   final _repository = AppointmentsRepository();
+  final _directory = CoachDirectoryNotifier();
+  final _programs = CoachProgramsNotifier();
+  final _content = CoachContentNotifier();
+
+  /// Identifiant du coach connecté (source unique, plus de valeur en dur).
+  String get _coachId => CoachSession().coachId;
 
   @override
   void initState() {
     super.initState();
     _repository.addListener(_onDataChanged);
+    _directory.addListener(_onDataChanged);
+    _programs.addListener(_onDataChanged);
+    _content.addListener(_onDataChanged);
   }
 
   @override
   void dispose() {
     _repository.removeListener(_onDataChanged);
+    _directory.removeListener(_onDataChanged);
+    _programs.removeListener(_onDataChanged);
+    _content.removeListener(_onDataChanged);
     super.dispose();
   }
 
@@ -34,15 +64,140 @@ class _CoachDashboardPageState extends State<CoachDashboardPage> {
 
   List<Appointment> get _todayAppointments {
     final now = DateTime.now();
-    return _repository.getAppointmentsForDay(now, coachId: 'coach_1')
+    return _repository.getAppointmentsForDay(now, coachId: _coachId)
         .where((a) => a.status != AppointmentStatus.cancelled)
         .toList();
   }
 
   List<Appointment> get _pendingAppointments {
-    return _repository.getAppointmentsForCoach('coach_1')
+    return _repository.getAppointmentsForCoach(_coachId)
         .where((a) => a.status == AppointmentStatus.pending)
         .toList();
+  }
+
+  /// Nombre de programmes réels créés (source : CoachProgramsNotifier).
+  int get _programsCount => _programs.programs.length;
+
+  /// Nombre de publications réelles du coach connecté (posts).
+  int get _publicationsCount => _content.getPosts(_coachId).length;
+
+  /// Nombre de clients de la démo (source unique : CoachClientsData).
+  int get _clientsCount => CoachClientsData.demoClients.length;
+
+  /// Séances (non annulées) planifiées pour le coach dans le mois en cours.
+  int get _monthAppointmentsCount {
+    final now = DateTime.now();
+    return _repository
+        .getAppointmentsForCoach(_coachId)
+        .where((a) =>
+            a.status != AppointmentStatus.cancelled &&
+            a.start.year == now.year &&
+            a.start.month == now.month)
+        .length;
+  }
+
+  /// Jours réellement disponibles par semaine (source : Mes disponibilités).
+  int get _availableDaysCount {
+    return _repository
+        .getOrCreateWeekly(_coachId)
+        .where((d) => d.enabled && d.ranges.isNotEmpty)
+        .length;
+  }
+
+  /// Nombre total de créneaux hebdomadaires configurés (source : Mes disponibilités).
+  int get _weeklySlotsCount {
+    return _repository
+        .getOrCreateWeekly(_coachId)
+        .where((d) => d.enabled)
+        .fold<int>(0, (sum, d) => sum + d.ranges.length);
+  }
+
+  /// En-tête affichant l'identité du coach connecté, lue depuis la source
+  /// unique (`CoachDirectoryNotifier`). Aucune donnée codée en dur : c'est le
+  /// profil du coach connecté (par défaut `coach_1`, ou le coach inscrit).
+  Widget _buildConnectedCoachHeader() {
+    final coach = _directory.getCoachById(_coachId);
+    final name = coach?.name ?? 'Mon espace coach';
+    final specialty = coach?.specialty ?? '';
+    final city = coach?.city ?? '';
+    final subtitle = [specialty, city].where((s) => s.isNotEmpty).join(' · ');
+    final avatar = _coachAvatarProvider(coach?.photoUrl);
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF1E1E2E), Color(0xFF161622)],
+        ),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 30,
+            backgroundColor: Colors.white.withOpacity(0.1),
+            backgroundImage: avatar,
+            child: avatar == null
+                ? const Icon(Icons.person, color: Colors.white70, size: 30)
+                : null,
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        name,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    if (coach?.isCertified == true) ...[
+                      const SizedBox(width: 6),
+                      const Icon(Icons.verified,
+                          color: Color(0xFFFFC300), size: 18),
+                    ],
+                  ],
+                ),
+                if (subtitle.isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.white.withOpacity(0.7),
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ],
+            ),
+          ),
+          if (coach != null)
+            Row(
+              children: [
+                const Icon(Icons.star, color: Color(0xFFFFC300), size: 16),
+                const SizedBox(width: 4),
+                Text(
+                  coach.rating.toStringAsFixed(1),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
+                  ),
+                ),
+              ],
+            ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -50,25 +205,18 @@ class _CoachDashboardPageState extends State<CoachDashboardPage> {
     final todayCount = _todayAppointments.length;
     final pendingCount = _pendingAppointments.length;
 
-    return Scaffold(
-      backgroundColor: const Color(0xFF0A0E27),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF1A1A2E),
-        foregroundColor: Colors.white,
-        elevation: 0,
-        title: const Text(
-          'Dashboard Coach',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        centerTitle: true,
-      ),
-      body: SafeArea(
+    final Widget body = SafeArea(
         top: false,
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(16, 24, 16, 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // ════════════════════════════════════════════════════════════
+              // PROFIL DU COACH CONNECTÉ (source unique)
+              // ════════════════════════════════════════════════════════════
+              _buildConnectedCoachHeader(),
+              const SizedBox(height: 20),
               // ════════════════════════════════════════════════════════════
               // STATISTIQUES
               // ════════════════════════════════════════════════════════════
@@ -86,9 +234,31 @@ class _CoachDashboardPageState extends State<CoachDashboardPage> {
                   Expanded(
                     child: _StatCard(
                       title: 'Clients actifs',
-                      value: '4',
+                      value: '$_clientsCount',
                       icon: Icons.people,
                       color: const Color(0xFF3498DB),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _StatCard(
+                      title: 'Programmes',
+                      value: '$_programsCount',
+                      icon: Icons.fitness_center,
+                      color: const Color(0xFF9B59B6),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: _StatCard(
+                      title: 'Publications',
+                      value: '$_publicationsCount',
+                      icon: Icons.article_outlined,
+                      color: const Color(0xFFE67E22),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -118,9 +288,31 @@ class _CoachDashboardPageState extends State<CoachDashboardPage> {
                   Expanded(
                     child: _StatCard(
                       title: 'Ce mois',
-                      value: '12',
+                      value: '$_monthAppointmentsCount',
                       icon: Icons.calendar_month,
                       color: const Color(0xFF9B59B6),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: _StatCard(
+                      title: 'Jours dispo/sem',
+                      value: '$_availableDaysCount',
+                      icon: Icons.event_available,
+                      color: const Color(0xFF2ECC71),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _StatCard(
+                      title: 'Créneaux/sem',
+                      value: '$_weeklySlotsCount',
+                      icon: Icons.access_time,
+                      color: const Color(0xFF1ABC9C),
                     ),
                   ),
                 ],
@@ -256,15 +448,29 @@ class _CoachDashboardPageState extends State<CoachDashboardPage> {
                             onTap: () {
                               Navigator.of(context).push(
                                 MaterialPageRoute(
-                                  builder: (_) => const CoachAvailabilityEditor(
-                                    coachId: 'coach_1',
-                                  ),
+                                  builder: (_) =>
+                                      CoachAvailabilityPage(coachId: _coachId),
                                 ),
                               );
                             },
                           ),
                         ),
                       ],
+                    ),
+                    const SizedBox(height: 12),
+                    _ActionButton(
+                      label: 'Mon profil public',
+                      icon: Icons.badge_outlined,
+                      color: const Color(0xFFFFC300),
+                      isPrimary: true,
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                CoachPublicProfileEditPage(coachId: _coachId),
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),
@@ -315,7 +521,28 @@ class _CoachDashboardPageState extends State<CoachDashboardPage> {
             ],
           ),
         ),
+      );
+
+    if (widget.embedded) {
+      return Container(
+        color: const Color(0xFF0A0E27),
+        child: body,
+      );
+    }
+
+    return Scaffold(
+      backgroundColor: const Color(0xFF0A0E27),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF1A1A2E),
+        foregroundColor: Colors.white,
+        elevation: 0,
+        title: const Text(
+          'Dashboard Coach',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        centerTitle: true,
       ),
+      body: body,
     );
   }
 }

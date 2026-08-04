@@ -4,6 +4,8 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/coach_profile.dart';
 import '../models/coach_diploma.dart';
+import '../models/coach_directory.dart' show CoachDirectoryNotifier;
+import '../coach/coach_session.dart';
 import '../main.dart';
 
 class SignupCoachPage extends StatefulWidget {
@@ -297,12 +299,47 @@ class _SignupCoachPageState extends State<SignupCoachPage> {
       debugPrint('Erreur lors de la sauvegarde: $e');
     }
 
+    // Synchronise l'identité du coach connecté avec la source unique
+    // (CoachDirectoryNotifier) : le profil public, l'annuaire, la carte, la
+    // fiche coach et les réservations affichent désormais CE coach et non plus
+    // les données de démonstration « Sophie Martin ».
+    try {
+      final directory = CoachDirectoryNotifier();
+      final base = directory.getCoachById(CoachSession.defaultCoachId);
+      if (base != null) {
+        final fullName = '${profile.firstName} ${profile.lastName}'.trim();
+        String? priceInfo;
+        if (profile.priceMin != null && profile.priceMax != null) {
+          priceInfo =
+              '${profile.priceMin!.toStringAsFixed(0)}€ - ${profile.priceMax!.toStringAsFixed(0)}€ / séance';
+        } else if (profile.priceMin != null) {
+          priceInfo = 'À partir de ${profile.priceMin!.toStringAsFixed(0)}€';
+        }
+        await directory.updateCoachProfile(
+          base.copyWith(
+            name: fullName.isNotEmpty ? fullName : null,
+            specialty: coachTypes.isNotEmpty ? coachTypes.first : null,
+            city: profile.city,
+            bio: profile.bio.trim().isNotEmpty ? profile.bio.trim() : null,
+            isCertified: diplomas.isNotEmpty,
+            certifications: diplomas.map((d) => d.title).toList(),
+            detailedSpecialties: coachTypes.isNotEmpty ? coachTypes : null,
+            yearsExperience: profile.experienceYears,
+            priceInfo: priceInfo,
+          ),
+        );
+      }
+      await CoachSession().setCoachId(CoachSession.defaultCoachId);
+    } catch (e) {
+      debugPrint('Erreur synchronisation profil coach: $e');
+    }
+
     if (!mounted) return;
     setState(() => _isLoading = false);
 
-    // Redirection vers le dashboard
+    // Redirection vers le dashboard (Coach : arrivée directe sur le Dashboard Coach)
     Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (_) => const UkanHomeShell()),
+      MaterialPageRoute(builder: (_) => const UkanHomeShell(initialRole: 'coach')),
       (route) => false,
     );
   }

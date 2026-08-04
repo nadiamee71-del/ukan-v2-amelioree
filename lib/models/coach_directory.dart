@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// ─────────────────────────────────────────────
 /// Modèle de profil coach
@@ -70,6 +72,9 @@ class CoachProfile {
   final List<String> beforeAfterPhotos; // Photos avant/après
   final List<String> detailedSpecialties; // Spécialités détaillées
   final List<CoachProgram> programs; // Programmes d'exercices avec tarifs
+  final int? yearsExperience; // Années d'expérience
+  final String? shortPresentation; // Présentation courte (accroche)
+  final String? priceInfo; // Tarif ou informations utiles (texte libre)
 
   CoachProfile({
     required this.id,
@@ -87,7 +92,51 @@ class CoachProfile {
     this.beforeAfterPhotos = const [],
     this.detailedSpecialties = const [],
     this.programs = const [],
+    this.yearsExperience,
+    this.shortPresentation,
+    this.priceInfo,
   });
+
+  CoachProfile copyWith({
+    String? name,
+    String? specialty,
+    String? city,
+    String? level,
+    double? rating,
+    bool? isCertified,
+    String? bio,
+    List<String>? certifications,
+    bool? isOnline,
+    String? photoUrl,
+    List<String>? coachingPhotos,
+    List<String>? beforeAfterPhotos,
+    List<String>? detailedSpecialties,
+    List<CoachProgram>? programs,
+    int? yearsExperience,
+    String? shortPresentation,
+    String? priceInfo,
+  }) {
+    return CoachProfile(
+      id: id,
+      name: name ?? this.name,
+      specialty: specialty ?? this.specialty,
+      city: city ?? this.city,
+      level: level ?? this.level,
+      rating: rating ?? this.rating,
+      isCertified: isCertified ?? this.isCertified,
+      bio: bio ?? this.bio,
+      certifications: certifications ?? this.certifications,
+      isOnline: isOnline ?? this.isOnline,
+      photoUrl: photoUrl ?? this.photoUrl,
+      coachingPhotos: coachingPhotos ?? this.coachingPhotos,
+      beforeAfterPhotos: beforeAfterPhotos ?? this.beforeAfterPhotos,
+      detailedSpecialties: detailedSpecialties ?? this.detailedSpecialties,
+      programs: programs ?? this.programs,
+      yearsExperience: yearsExperience ?? this.yearsExperience,
+      shortPresentation: shortPresentation ?? this.shortPresentation,
+      priceInfo: priceInfo ?? this.priceInfo,
+    );
+  }
 }
 
 /// ─────────────────────────────────────────────
@@ -215,6 +264,7 @@ class CoachDirectoryNotifier extends ChangeNotifier {
         rating: 4.9,
         isCertified: true,
         isOnline: false,
+        photoUrl: 'assets/images/ChatGPT Image 1 déc. 2025, 15_29_12.png',
         bio: 'Coach en musculation et prise de masse depuis 8 ans. Ancien compétiteur, je transmets mon expérience pour t\'aider à construire le corps de tes rêves.',
         certifications: ['BPJEPS Musculation', 'Certification nutrition', 'IFBB Pro'],
         detailedSpecialties: [
@@ -264,6 +314,7 @@ class CoachDirectoryNotifier extends ChangeNotifier {
         rating: 4.6,
         isCertified: false,
         isOnline: true,
+        photoUrl: 'assets/images/ChatGPT Image 1 déc. 2025, 15_40_04.png',
         bio: 'Professeure de yoga certifiée, je combine postures, respiration et méditation pour t\'aider à améliorer ta mobilité et ton bien-être global.',
         certifications: ['Certification Yoga Alliance'],
         detailedSpecialties: [
@@ -311,6 +362,7 @@ class CoachDirectoryNotifier extends ChangeNotifier {
         rating: 4.7,
         isCertified: true,
         isOnline: true,
+        photoUrl: 'assets/images/ChatGPT Image 1 déc. 2025, 15_43_18.png',
         bio: 'Coach running et triathlon, j\'aide les sportifs à améliorer leur endurance et leurs performances. Des programmes adaptés pour tous les niveaux.',
         certifications: ['BPJEPS AF', 'Certification triathlon'],
         detailedSpecialties: [
@@ -358,6 +410,7 @@ class CoachDirectoryNotifier extends ChangeNotifier {
         rating: 4.5,
         isCertified: false,
         isOnline: false,
+        photoUrl: 'assets/images/ChatGPT Image 1 déc. 2025, 15_43_23.png',
         bio: 'Coach bienveillante spécialisée en remise en forme douce. J\'accompagne les personnes qui reprennent le sport après une pause ou qui débutent.',
         certifications: ['BPJEPS AF'],
         detailedSpecialties: [
@@ -397,6 +450,10 @@ class CoachDirectoryNotifier extends ChangeNotifier {
       ),
     ]);
   }
+
+  /// Liste brute (non filtrée) de tous les coachs.
+  /// Source unique réutilisée par l'annuaire ET la carte.
+  List<CoachProfile> get allCoaches => List<CoachProfile>.from(_coaches);
 
   List<CoachProfile> get coaches {
     var filtered = List<CoachProfile>.from(_coaches);
@@ -465,6 +522,92 @@ class CoachDirectoryNotifier extends ChangeNotifier {
       return _coaches.firstWhere((coach) => coach.id == id);
     } catch (e) {
       return null;
+    }
+  }
+
+  // ─────────────────────────────────────────────
+  // Édition & persistance locale du profil coach
+  // Source unique : ce notifier. Les champs éditables sont sauvegardés
+  // dans SharedPreferences (clé `coach_public_profile_overrides`) et
+  // ré-appliqués au démarrage via loadPersistedProfile().
+  // ─────────────────────────────────────────────
+
+  static const String _prefsKey = 'coach_public_profile_overrides';
+
+  /// Remplace le profil coach dans la liste (par id) et notifie l'UI.
+  /// Persiste par défaut les champs éditables dans SharedPreferences.
+  Future<void> updateCoachProfile(CoachProfile updated, {bool persist = true}) async {
+    final index = _coaches.indexWhere((c) => c.id == updated.id);
+    if (index == -1) return;
+    _coaches[index] = updated;
+    notifyListeners();
+    if (persist) {
+      await _persist();
+    }
+  }
+
+  Map<String, dynamic> _editableToJson(CoachProfile c) => {
+        'name': c.name,
+        'specialty': c.specialty,
+        'city': c.city,
+        'level': c.level,
+        'bio': c.bio,
+        'isCertified': c.isCertified,
+        'photoUrl': c.photoUrl,
+        'certifications': c.certifications,
+        'detailedSpecialties': c.detailedSpecialties,
+        'yearsExperience': c.yearsExperience,
+        'shortPresentation': c.shortPresentation,
+        'priceInfo': c.priceInfo,
+      };
+
+  Future<void> _persist() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final Map<String, dynamic> all = {};
+      for (final c in _coaches) {
+        all[c.id] = _editableToJson(c);
+      }
+      await prefs.setString(_prefsKey, jsonEncode(all));
+    } catch (_) {
+      // Démo : en cas d'erreur, on reste en mémoire.
+    }
+  }
+
+  /// Recharge les champs éditables persistés et les applique aux coachs seedés.
+  /// À appeler une fois au démarrage (main).
+  Future<void> loadPersistedProfile() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString(_prefsKey);
+      if (raw == null || raw.isEmpty) return;
+      final decoded = jsonDecode(raw);
+      if (decoded is! Map) return;
+      var changed = false;
+      decoded.forEach((coachId, data) {
+        if (data is! Map) return;
+        final index = _coaches.indexWhere((c) => c.id == coachId);
+        if (index == -1) return;
+        final current = _coaches[index];
+        _coaches[index] = current.copyWith(
+          name: data['name'] as String?,
+          specialty: data['specialty'] as String?,
+          city: data['city'] as String?,
+          level: data['level'] as String?,
+          bio: data['bio'] as String?,
+          isCertified: data['isCertified'] as bool?,
+          photoUrl: data['photoUrl'] as String?,
+          certifications: (data['certifications'] as List?)?.map((e) => e.toString()).toList(),
+          detailedSpecialties: (data['detailedSpecialties'] as List?)?.map((e) => e.toString()).toList(),
+          yearsExperience: data['yearsExperience'] as int?,
+          shortPresentation: data['shortPresentation'] as String?,
+          priceInfo: data['priceInfo'] as String?,
+        );
+        changed = true;
+      });
+      if (changed) notifyListeners();
+    } catch (_) {
+      // Démo : ignore les données corrompues.
     }
   }
 }

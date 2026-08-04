@@ -5,12 +5,18 @@ part of ukan_main;
 // import 'widgets/stories_header_row.dart';
 
 /// Page d'accueil regroupant Dashboard et Publications.
+///
+/// En mode coach (`coachMode == true`), le premier segment affiche le
+/// Dashboard Coach (embarqué) à la place du Dashboard utilisateur, tout en
+/// réutilisant strictement le même onglet Publications.
 class HomePage extends StatefulWidget {
   final VoidCallback onOpenNextWorkout;
+  final bool coachMode;
 
   const HomePage({
     super.key,
     required this.onOpenNextWorkout,
+    this.coachMode = false,
   });
 
   @override
@@ -54,15 +60,18 @@ class _HomePageState extends State<HomePage>
           _SegmentedControl(
             controller: _tabController,
             selectedIndex: _selectedTabIndex,
+            firstLabel: 'Dashboard',
           ),
           Expanded(
             child: TabBarView(
               controller: _tabController,
               physics: const PageScrollPhysics(),
               children: [
-                DashboardTab(
-                  onOpenNextWorkout: widget.onOpenNextWorkout,
-                ),
+                widget.coachMode
+                    ? const CoachDashboardPage(embedded: true)
+                    : DashboardTab(
+                        onOpenNextWorkout: widget.onOpenNextWorkout,
+                      ),
                 const PublicationsTab(),
               ],
             ),
@@ -72,8 +81,12 @@ class _HomePageState extends State<HomePage>
     );
   }
   Widget _buildTopHeader() {
+    // En mode coach, on masque l'en-tête « défi hebdo » (orienté utilisateur)
+    // sur le Dashboard, tout en conservant l'en-tête stories des Publications.
     if (_selectedTabIndex == 0) {
-      return const WeeklyChallengeHeader();
+      return widget.coachMode
+          ? const SizedBox.shrink()
+          : const WeeklyChallengeHeader();
     }
     return const StoriesHeaderRow();
   }
@@ -82,10 +95,12 @@ class _HomePageState extends State<HomePage>
 class _SegmentedControl extends StatelessWidget {
   final TabController controller;
   final int selectedIndex;
+  final String firstLabel;
 
   const _SegmentedControl({
     required this.controller,
     required this.selectedIndex,
+    this.firstLabel = 'Dashboard',
   });
 
   @override
@@ -117,7 +132,7 @@ class _SegmentedControl extends StatelessWidget {
       child: Row(
         children: [
           _SegmentedButton(
-            label: 'Dashboard',
+            label: firstLabel,
             isActive: index == 0,
             onPressed: () => controller.animateTo(0),
           ),

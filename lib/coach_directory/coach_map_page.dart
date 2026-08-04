@@ -1,5 +1,12 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'mock_coaches_data.dart';
+
+/// Avatar coach : gère un chemin d'asset ou un fichier local (photo éditée).
+ImageProvider _coachAvatarProvider(String path) {
+  if (path.startsWith('assets/')) return AssetImage(path);
+  return FileImage(File(path));
+}
 
 // Palette de couleurs Ukan
 const Color _darkBg = Color(0xFF0D1117);
@@ -431,8 +438,8 @@ class _CoachMapPageState extends State<CoachMapPage> {
         ],
       ),
       child: ClipOval(
-        child: Image.asset(
-          coach.avatarUrl,
+        child: Image(
+          image: _coachAvatarProvider(coach.avatarUrl),
           fit: BoxFit.cover,
           errorBuilder: (_, __, ___) => Icon(
             Icons.person,
@@ -471,8 +478,8 @@ class _CoachMapPageState extends State<CoachMapPage> {
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: Image.asset(
-                coach.avatarUrl,
+              child: Image(
+                image: _coachAvatarProvider(coach.avatarUrl),
                 fit: BoxFit.cover,
                 errorBuilder: (_, __, ___) => Container(
                   color: _cardBgLight,
@@ -699,8 +706,8 @@ class _CoachMapPageState extends State<CoachMapPage> {
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(7),
-                child: Image.asset(
-                  coach.avatarUrl,
+                child: Image(
+                  image: _coachAvatarProvider(coach.avatarUrl),
                   fit: BoxFit.cover,
                   errorBuilder: (_, __, ___) => const Icon(
                     Icons.person,

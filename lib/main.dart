@@ -6,6 +6,7 @@ import 'nutrition/nutrition_hub_page.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'coach_directory_page.dart';
 import 'coach_dashboard_page.dart';
 import 'models/user_profile.dart';
@@ -64,6 +65,7 @@ import 'pages/sessions_goal_page.dart';
 import 'chat_page.dart';
 import 'coach_detail_page.dart';
 import 'models/coach_directory.dart';
+import 'coach/coach_session.dart';
 import 'models/coach_programs.dart';
 import 'pages/steps_goal_page.dart';
 import 'pages/sleep_goal_page.dart';
@@ -98,7 +100,12 @@ part 'home/widgets/publications_tab.dart';
 part 'home/widgets/stories_row.dart';
 part 'home/widgets/publication_card.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  // Recharge l'identité du coach connecté puis les modifications du profil
+  // coach persistées localement (source unique : CoachDirectoryNotifier).
+  await CoachSession().load();
+  await CoachDirectoryNotifier().loadPersistedProfile();
   runApp(const UkanApp());
 }
 
@@ -570,7 +577,11 @@ class _LabeledField extends StatelessWidget {
 // ─────────────────────────────────────────────
 
 class UkanHomeShell extends StatefulWidget {
-  const UkanHomeShell({super.key});
+  /// Rôle connu au moment de la navigation (login / inscription).
+  /// Si null, le rôle est relu depuis SharedPreferences (clé `fitpro_role`).
+  final String? initialRole;
+
+  const UkanHomeShell({super.key, this.initialRole});
 
   @override
   State<UkanHomeShell> createState() => _UkanHomeShellState();
@@ -578,6 +589,33 @@ class UkanHomeShell extends StatefulWidget {
 
 class _UkanHomeShellState extends State<UkanHomeShell> {
   int _currentIndex = 0;
+
+  // Rôle courant : 'coach' ou 'client'. Secours par défaut : 'client'.
+  String _role = 'client';
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.initialRole != null) {
+      _role = _normalizeRole(widget.initialRole);
+    } else {
+      _loadRoleFromPrefs();
+    }
+  }
+
+  String _normalizeRole(String? raw) => raw == 'coach' ? 'coach' : 'client';
+
+  Future<void> _loadRoleFromPrefs() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final role = _normalizeRole(prefs.getString('fitpro_role'));
+      if (mounted && role != _role) {
+        setState(() => _role = role);
+      }
+    } catch (_) {
+      // En cas d'erreur, on conserve le rôle de secours 'client'.
+    }
+  }
 
   void _onTabTapped(int index) {
     setState(() => _currentIndex = index);
@@ -599,8 +637,9 @@ class _UkanHomeShellState extends State<UkanHomeShell> {
   Widget build(BuildContext context) {
     final themeNotifier = ThemeNotifier();
     final isDarkMode = themeNotifier.isDarkMode;
+    final bool isCoach = _role == 'coach';
     final pages = [
-      HomePage(onOpenNextWorkout: () {
+      HomePage(coachMode: isCoach, onOpenNextWorkout: () {
         Navigator.of(context).push(
           MaterialPageRoute(
             builder: (_) => WorkoutDetailPage(
@@ -635,7 +674,7 @@ class _UkanHomeShellState extends State<UkanHomeShell> {
         },
       ),
       const NutritionTab(), // Garde l'original, on peut aussi utiliser SimpleNutritionTab plus tard
-      const EspaceProScreen(),
+      EspaceProScreen(isCoach: isCoach),
       const CoachDirectoryPage(),
     ];
 

@@ -11,6 +11,14 @@ import 'coach_appointment_page.dart';
 import 'coach_program_detail_page.dart';
 import 'features/appointments/client_booking_view.dart';
 
+/// Fournit l'ImageProvider adapté selon que le chemin est un asset ou un
+/// fichier local (avatar modifié par le coach via la galerie).
+ImageProvider? _coachPhotoProvider(String? photoUrl) {
+  if (photoUrl == null || photoUrl.isEmpty) return null;
+  if (photoUrl.startsWith('assets/')) return AssetImage(photoUrl);
+  return FileImage(File(photoUrl));
+}
+
 /// Page détaillée stylisée du profil du coach avec onglets
 class CoachDetailPage extends StatefulWidget {
   final String coachId;
@@ -88,10 +96,8 @@ class _CoachDetailPageState extends State<CoachDetailPage> with TickerProviderSt
                 CircleAvatar(
                   radius: 20,
                   backgroundColor: const Color(0xFF21262D),
-                  backgroundImage: coach.photoUrl != null
-                      ? AssetImage(coach.photoUrl!)
-                      : null,
-                  child: coach.photoUrl == null
+                  backgroundImage: _coachPhotoProvider(coach.photoUrl),
+                  child: _coachPhotoProvider(coach.photoUrl) == null
                       ? const Icon(
                           Icons.person,
                           size: 20,
@@ -309,6 +315,60 @@ class _CoachDetailPageState extends State<CoachDetailPage> with TickerProviderSt
                     ),
                   ],
                 ),
+                    // Présentation courte (accroche) si renseignée
+                    if (coach.shortPresentation != null &&
+                        coach.shortPresentation!.trim().isNotEmpty) ...[
+                      const SizedBox(height: 10),
+                      Text(
+                        coach.shortPresentation!,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: textLight,
+                          fontStyle: FontStyle.italic,
+                          height: 1.4,
+                        ),
+                      ),
+                    ],
+                    // Années d'expérience si renseignées
+                    if (coach.yearsExperience != null) ...[
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          const Icon(Icons.workspace_premium,
+                              size: 16, color: primaryGold),
+                          const SizedBox(width: 4),
+                          Text(
+                            '${coach.yearsExperience} ans d\'expérience',
+                            style: const TextStyle(
+                              fontSize: 13,
+                              color: textLight,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                    // Tarif / infos utiles si renseignés
+                    if (coach.priceInfo != null &&
+                        coach.priceInfo!.trim().isNotEmpty) ...[
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          const Icon(Icons.euro, size: 16, color: primaryGold),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
+                              coach.priceInfo!,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: textLight,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                     // Bio "À propos" juste en dessous de la certification (version compacte)
                     const SizedBox(height: 12),
                     Text(

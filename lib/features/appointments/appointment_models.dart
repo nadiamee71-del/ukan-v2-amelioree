@@ -342,3 +342,88 @@ class AppointmentUser {
   });
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// DISPONIBILITÉS HEBDOMADAIRES + EXCEPTIONS
+// Modèles partagés entre CoachAvailabilityPage (édition) et
+// AppointmentsRepository (génération des créneaux réservables côté client).
+// ═══════════════════════════════════════════════════════════════════════════
+
+class DayAvailability{DayAvailability(this.name,List<TimeRange> r,{this.enabled=true}):ranges=[...r];final String name;bool enabled;List<TimeRange> ranges;DayAvailability copy()=>DayAvailability(name,ranges.map((e)=>e.copy()).toList(),enabled:enabled);String get summary=>!enabled?'Aucun créneau — journée indisponible':ranges.isEmpty?'Aucun créneau configuré':ranges.map((e)=>e.label).join(' · ');}
+class TimeRange{TimeRange(this.sh,this.sm,this.eh,this.em);final int sh,sm,eh,em;TimeOfDay get start=>TimeOfDay(hour:sh,minute:sm);TimeOfDay get end=>TimeOfDay(hour:eh,minute:em);int get begin=>sh*60+sm;int get finish=>eh*60+em;String get label=>'${two(sh)}:${two(sm)}–${two(eh)}:${two(em)}';TimeRange copy()=>TimeRange(sh,sm,eh,em);TimeRange withStart(TimeOfDay t)=>TimeRange(t.hour,t.minute,eh,em);TimeRange withEnd(TimeOfDay t)=>TimeRange(sh,sm,t.hour,t.minute);}
+class DayResult{DayResult(this.day,Set<int> t):targets={...t};final DayAvailability day;final Set<int> targets;}
+enum ExceptionKind{unavailable('Indisponible'),special('Disponibilité exceptionnelle'),vacation('Vacances'),modified('Horaires modifiés');const ExceptionKind(this.label);final String label;}
+class AvailabilityException{AvailabilityException(this.id,this.start,{this.end,required this.kind,this.allDay=false,List<TimeRange> ranges=const[],this.reason=''}):ranges=[...ranges];int id;DateTime start;DateTime? end;ExceptionKind kind;bool allDay;List<TimeRange> ranges;String reason;AvailabilityException copy()=>AvailabilityException(id,start,end:end,kind:kind,allDay:allDay,ranges:ranges.map((e)=>e.copy()).toList(),reason:reason);String get dateLabel=>end==null?fullDate(start):'${shortDate(start)} – ${shortDate(end!)}';}
+
+String two(int n)=>n.toString().padLeft(2,'0');
+const months=['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+String monthKey(DateTime d)=>'${d.year}-${two(d.month)}';
+String monthLabel(DateTime d)=>'${months[d.month-1][0].toUpperCase()}${months[d.month-1].substring(1)} ${d.year}';
+String fullDate(DateTime d)=>'${d.day} ${months[d.month-1]} ${d.year}';
+String shortDate(DateTime d)=>'${d.day} ${months[d.month-1].substring(0,3)} ${d.year}';
+
+/// Calcule les plages horaires réellement disponibles pour [date] à partir du
+/// planning hebdomadaire [week] (index 0=Lundi … 6=Dimanche) et des [exceptions]
+/// (vacances, journées indisponibles, créneaux exceptionnels/horaires modifiés).
+List<TimeRange> availabilityRangesForDate(
+  DateTime date,
+  List<DayAvailability> week,
+  List<AvailabilityException> exceptions,
+) {
+  if (week.isEmpty) return const [];
+  final day = week[(date.weekday - 1) % 7];
+  var ranges = day.enabled ? day.ranges.map((r) => r.copy()).toList() : <TimeRange>[];
+
+  final d = DateTime(date.year, date.month, date.day);
+  final applicable = exceptions.where((e) {
+    final s = DateTime(e.start.year, e.start.month, e.start.day);
+    final ed = e.end ?? e.start;
+    final f = DateTime(ed.year, ed.month, ed.day);
+    return !d.isBefore(s) && !d.isAfter(f);
+  }).toList();
+
+  // Créneaux exceptionnels (special = ajout) / horaires modifiés (remplacement)
+  final extra = <TimeRange>[];
+  var replace = false;
+  for (final e in applicable) {
+    if (e.kind == ExceptionKind.special || e.kind == ExceptionKind.modified) {
+      if (e.kind == ExceptionKind.modified) replace = true;
+      if (!e.allDay) extra.addAll(e.ranges.map((r) => r.copy()));
+    }
+  }
+  if (extra.isNotEmpty) {
+    ranges = replace ? extra : [...ranges, ...extra];
+  }
+
+  // Vacances / indisponibilités (journée complète = bloquée, sinon soustraction)
+  for (final e in applicable) {
+    if (e.kind == ExceptionKind.vacation || e.kind == ExceptionKind.unavailable) {
+      if (e.allDay) return const [];
+      ranges = _subtractRanges(ranges, e.ranges);
+    }
+  }
+
+  ranges.sort((a, b) => a.begin.compareTo(b.begin));
+  return ranges;
+}
+
+List<TimeRange> _subtractRanges(List<TimeRange> base, List<TimeRange> blocks) {
+  var segments = base.map((r) => [r.begin, r.finish]).toList();
+  for (final b in blocks) {
+    final next = <List<int>>[];
+    for (final seg in segments) {
+      final s = seg[0], e = seg[1];
+      if (b.finish <= s || b.begin >= e) {
+        next.add([s, e]);
+        continue;
+      }
+      if (b.begin > s) next.add([s, b.begin]);
+      if (b.finish < e) next.add([b.finish, e]);
+    }
+    segments = next;
+  }
+  return segments
+      .where((seg) => seg[1] > seg[0])
+      .map((seg) => TimeRange(seg[0] ~/ 60, seg[0] % 60, seg[1] ~/ 60, seg[1] % 60))
+      .toList();
+}
+
