@@ -66,6 +66,7 @@ import 'chat_page.dart';
 import 'coach_detail_page.dart';
 import 'models/coach_directory.dart';
 import 'coach/coach_session.dart';
+import 'theme/app_theme.dart';
 import 'models/coach_programs.dart';
 import 'pages/steps_goal_page.dart';
 import 'pages/sleep_goal_page.dart';
@@ -164,35 +165,8 @@ class _UkanAppState extends State<UkanApp> {
           child: child!,
         );
       },
-      theme: ThemeData(
-        scaffoldBackgroundColor: const Color(0xFFFFF9E6), // Jaune très clair pour mode jour
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFFFFC300),
-          primary: const Color(0xFFFFB366), // Orange pastel au lieu de noir
-          secondary: const Color(0xFFFFC300),
-        ),
-        useMaterial3: true,
-        fontFamily: 'Roboto',
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Color(0xFFFFB366), // Orange pastel au lieu de noir
-          foregroundColor: Colors.white,
-        ),
-      ),
-      darkTheme: ThemeData(
-        scaffoldBackgroundColor: const Color(0xFF0A0E27), // Noir pour mode nuit
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFFFFC300),
-          primary: const Color(0xFFFFB366), // Orange pastel même en mode nuit
-          secondary: const Color(0xFFFFC300),
-          brightness: Brightness.dark,
-        ),
-        useMaterial3: true,
-        fontFamily: 'Roboto',
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Color(0xFFFFB366), // Orange pastel au lieu de noir
-          foregroundColor: Colors.white,
-        ),
-      ),
+      theme: AppTheme.light,
+      darkTheme: AppTheme.dark,
       themeMode: _themeNotifier.isDarkMode ? ThemeMode.dark : ThemeMode.light,
       home: const SplashScreen(),
     );
@@ -635,8 +609,6 @@ class _UkanHomeShellState extends State<UkanHomeShell> {
 
   @override
   Widget build(BuildContext context) {
-    final themeNotifier = ThemeNotifier();
-    final isDarkMode = themeNotifier.isDarkMode;
     final bool isCoach = _role == 'coach';
     final pages = [
       HomePage(coachMode: isCoach, onOpenNextWorkout: () {
@@ -679,10 +651,7 @@ class _UkanHomeShellState extends State<UkanHomeShell> {
     ];
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0D1117), // Fond sombre uniforme
       appBar: AppBar(
-        backgroundColor: const Color(0xFF161B22), // AppBar sombre
-        foregroundColor: Colors.white,
         elevation: 0,
         title: const Text(
           'Ukan',
@@ -749,9 +718,6 @@ class _UkanHomeShellState extends State<UkanHomeShell> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: _onTabTapped,
-        backgroundColor: const Color(0xFF161B22), // Fond sombre uniforme
-        selectedItemColor: const Color(0xFFFFC300), // Doré sélectionné
-        unselectedItemColor: const Color(0xFF8B949E), // Gris non sélectionné
         showUnselectedLabels: true,
         type: BottomNavigationBarType.fixed,
         items: const [

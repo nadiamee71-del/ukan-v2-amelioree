@@ -106,10 +106,9 @@ class _SegmentedControl extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final int index = selectedIndex;
-    // Palette sombre uniforme
-    const Color cardBgLight = Color(0xFF21262D);
-    const Color primaryGold = Color(0xFFFFC300);
-    const Color borderColor = Color(0xFF30363D);
+    // Couleurs pilotées par le thème global (clair/sombre).
+    final Color cardBgLight = Theme.of(context).colorScheme.surfaceContainerHighest;
+    final Color borderColor = Theme.of(context).dividerColor;
 
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 4, 16, 6),
@@ -161,10 +160,10 @@ class _SegmentedButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Palette sombre uniforme
+    // Or de marque conservé ; fonds/textes suivent le thème global.
     const Color primaryGold = Color(0xFFFFC300);
-    const Color cardBg = Color(0xFF161B22);
-    const Color textMuted = Color(0xFF8B949E);
+    final Color cardBg = Theme.of(context).colorScheme.surface;
+    final Color textMuted = Theme.of(context).colorScheme.onSurfaceVariant;
 
     return Expanded(
       child: GestureDetector(

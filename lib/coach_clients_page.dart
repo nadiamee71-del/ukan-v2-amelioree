@@ -9,10 +9,7 @@ class CoachClientsPage extends StatelessWidget {
     final clients = CoachClientsData.demoClients;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF111111),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF111111),
-        foregroundColor: Colors.white,
         title: const Text('Mes clients'),
         centerTitle: true,
         elevation: 0,
@@ -28,7 +25,7 @@ class CoachClientsPage extends StatelessWidget {
                 '${clients.length} clients suivis actuellement.',
                 style: TextStyle(
                   fontSize: 14,
-                  color: Colors.white.withOpacity(0.7),
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ),
             ),
@@ -192,13 +189,14 @@ class _ClientCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return InkWell(
       borderRadius: BorderRadius.circular(18),
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: cs.surface,
           borderRadius: BorderRadius.circular(18),
           boxShadow: [
             BoxShadow(
@@ -247,10 +245,10 @@ class _ClientCard extends StatelessWidget {
                       Expanded(
                         child: Text(
                           client.name,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
-                            color: Colors.black87,
+                            color: cs.onSurface,
                           ),
                         ),
                       ),
@@ -299,7 +297,7 @@ class _ClientCard extends StatelessWidget {
                       Icon(
                         Icons.track_changes,
                         size: 14,
-                        color: Colors.grey.shade600,
+                        color: cs.onSurfaceVariant,
                       ),
                       const SizedBox(width: 4),
                       Expanded(
@@ -307,7 +305,7 @@ class _ClientCard extends StatelessWidget {
                           'Objectif : ${client.goal}',
                           style: TextStyle(
                             fontSize: 13,
-                            color: Colors.grey.shade700,
+                            color: cs.onSurfaceVariant,
                           ),
                         ),
                       ),
@@ -319,28 +317,28 @@ class _ClientCard extends StatelessWidget {
                       Icon(
                         Icons.fitness_center,
                         size: 14,
-                        color: Colors.grey.shade600,
+                        color: cs.onSurfaceVariant,
                       ),
                       const SizedBox(width: 4),
                       Text(
                         '${client.sessionsPerWeek}/semaine',
                         style: TextStyle(
                           fontSize: 13,
-                          color: Colors.grey.shade700,
+                          color: cs.onSurfaceVariant,
                         ),
                       ),
                       const SizedBox(width: 16),
                       Icon(
                         Icons.trending_up,
                         size: 14,
-                        color: Colors.grey.shade600,
+                        color: cs.onSurfaceVariant,
                       ),
                       const SizedBox(width: 4),
                       Text(
                         client.level,
                         style: TextStyle(
                           fontSize: 13,
-                          color: Colors.grey.shade700,
+                          color: cs.onSurfaceVariant,
                         ),
                       ),
                     ],
@@ -352,7 +350,7 @@ class _ClientCard extends StatelessWidget {
             // Flèche
             Icon(
               Icons.chevron_right,
-              color: Colors.grey.shade400,
+              color: cs.onSurfaceVariant,
               size: 24,
             ),
           ],

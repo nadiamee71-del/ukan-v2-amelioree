@@ -37,10 +37,7 @@ import 'rooms_page.dart';
 import 'hard_challenge/hard_challenge_page.dart';
 import 'evolution/pose_guide_camera_page.dart';
 
-// Palette moderne et immersive
-const Color _darkBg = Color(0xFF0D1117);
-const Color _cardBg = Color(0xFF161B22);
-const Color _cardBgLight = Color(0xFF21262D);
+// Couleurs de marque / accents (identiques dans les deux thèmes)
 const Color _primaryGold = Color(0xFFFFC300);
 const Color _primaryBlue = Color(0xFF58A6FF);
 const Color _primaryGreen = Color(0xFF4ECDC4);
@@ -48,8 +45,13 @@ const Color _primaryOrange = Color(0xFFFF9F43);
 const Color _primaryPurple = Color(0xFFA855F7);
 const Color _primaryRed = Color(0xFFFF6B6B);
 const Color _primaryCyan = Color(0xFF22D3EE);
-const Color _textLight = Color(0xFFF0F6FC);
-const Color _textMuted = Color(0xFF8B949E);
+
+// Couleurs pilotées par le thème global (clair/sombre) via ThemeNotifier.
+Color get _darkBg => ThemeNotifier().isDarkMode ? const Color(0xFF0D1117) : const Color(0xFFF5F6F8);
+Color get _cardBg => ThemeNotifier().isDarkMode ? const Color(0xFF161B22) : Colors.white;
+Color get _cardBgLight => ThemeNotifier().isDarkMode ? const Color(0xFF21262D) : const Color(0xFFEFF1F4);
+Color get _textLight => ThemeNotifier().isDarkMode ? const Color(0xFFF0F6FC) : const Color(0xFF1A1D21);
+Color get _textMuted => ThemeNotifier().isDarkMode ? const Color(0xFF8B949E) : const Color(0xFF6B7280);
 
 // Styles uniformes pour tous les conteneurs
 const double _uniformBorderRadius = 16.0;
@@ -508,7 +510,7 @@ class _EspaceProScreenState extends State<EspaceProScreen>
                         ),
                         boxShadow: _uniformShadow,
                       ),
-                      child: const Icon(Icons.help_outline,
+                      child: Icon(Icons.help_outline,
                           size: 20, color: _textLight),
                     ),
                     onPressed: () {
@@ -555,7 +557,7 @@ class _EspaceProScreenState extends State<EspaceProScreen>
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const Text(
+                                    Text(
                                       'Espace Avancé',
                                       style: TextStyle(
                                         color: _textLight,
@@ -711,7 +713,7 @@ class _SearchAndTabsDelegate extends SliverPersistentHeaderDelegate {
                   contentPadding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 ),
-                style: const TextStyle(color: _textLight, fontSize: 15),
+                style: TextStyle(color: _textLight, fontSize: 15),
                 onChanged: onSearchChanged,
               ),
             ),
@@ -895,7 +897,7 @@ class _FeatureCard extends StatelessWidget {
                         // Titre
                         Text(
                           feature.title,
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: _textLight,
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
@@ -907,7 +909,7 @@ class _FeatureCard extends StatelessWidget {
                         // Sous-titre
                         Text(
                           feature.subtitle,
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: _textMuted,
                             fontSize: 10,
                           ),

@@ -220,12 +220,12 @@ class _CoachDashboardPageState extends State<CoachDashboardPage> {
               // ════════════════════════════════════════════════════════════
               // STATISTIQUES
               // ════════════════════════════════════════════════════════════
-              const Text(
+              Text(
                 "Vue d'ensemble",
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
               const SizedBox(height: 12),
@@ -325,12 +325,12 @@ class _CoachDashboardPageState extends State<CoachDashboardPage> {
                 const SizedBox(height: 24),
                 Row(
                   children: [
-                    const Text(
+                    Text(
                       'RDV en attente',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
-                        color: Colors.white,
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -480,12 +480,12 @@ class _CoachDashboardPageState extends State<CoachDashboardPage> {
               // PROCHAINES SÉANCES
               // ════════════════════════════════════════════════════════════
               const SizedBox(height: 24),
-              const Text(
+              Text(
                 'Prochaines séances',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
               const SizedBox(height: 12),
@@ -496,8 +496,9 @@ class _CoachDashboardPageState extends State<CoachDashboardPage> {
                 Container(
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.05),
+                    color: Theme.of(context).colorScheme.surface,
                     borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Theme.of(context).dividerColor),
                   ),
                   child: Center(
                     child: Column(
@@ -505,13 +506,13 @@ class _CoachDashboardPageState extends State<CoachDashboardPage> {
                         Icon(
                           Icons.event_busy,
                           size: 40,
-                          color: Colors.white.withOpacity(0.3),
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                         const SizedBox(height: 8),
                         Text(
                           'Pas de séance aujourd\'hui',
                           style: TextStyle(
-                            color: Colors.white.withOpacity(0.5),
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
                           ),
                         ),
                       ],
@@ -525,16 +526,13 @@ class _CoachDashboardPageState extends State<CoachDashboardPage> {
 
     if (widget.embedded) {
       return Container(
-        color: const Color(0xFF0A0E27),
+        color: Theme.of(context).scaffoldBackgroundColor,
         child: body,
       );
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0E27),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1A1A2E),
-        foregroundColor: Colors.white,
         elevation: 0,
         title: const Text(
           'Dashboard Coach',
@@ -602,14 +600,16 @@ class _StatCard extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
-                    color: highlight ? color : Colors.white,
+                    color: highlight
+                        ? color
+                        : Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
                 Text(
                   title,
                   style: TextStyle(
                     fontSize: 11,
-                    color: Colors.white.withOpacity(0.6),
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                 ),
               ],
@@ -724,15 +724,15 @@ class _PendingAppointmentCard extends StatelessWidget {
                   children: [
                     Text(
                       appointment.clientName,
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurface,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     Text(
                       '$dateStr à $timeStr • ${appointment.type?.displayName ?? ""}',
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.6),
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                         fontSize: 12,
                       ),
                     ),
@@ -845,8 +845,8 @@ class _UpcomingSessionCard extends StatelessWidget {
               children: [
                 Text(
                   appointment.clientName,
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurface,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -855,13 +855,13 @@ class _UpcomingSessionCard extends StatelessWidget {
                     Icon(
                       Icons.access_time,
                       size: 12,
-                      color: Colors.white.withOpacity(0.6),
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                     const SizedBox(width: 4),
                     Text(
                       timeStr,
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.6),
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                         fontSize: 12,
                       ),
                     ),
@@ -870,7 +870,7 @@ class _UpcomingSessionCard extends StatelessWidget {
                       Text(
                         '• ${appointment.type!.displayName}',
                         style: TextStyle(
-                          color: Colors.white.withOpacity(0.6),
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                           fontSize: 12,
                         ),
                       ),

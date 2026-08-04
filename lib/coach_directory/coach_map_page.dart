@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'mock_coaches_data.dart';
+import '../models/theme_notifier.dart';
 
 /// Avatar coach : gère un chemin d'asset ou un fichier local (photo éditée).
 ImageProvider _coachAvatarProvider(String path) {
@@ -8,16 +9,19 @@ ImageProvider _coachAvatarProvider(String path) {
   return FileImage(File(path));
 }
 
-// Palette de couleurs Ukan
-const Color _darkBg = Color(0xFF0D1117);
-const Color _cardBg = Color(0xFF161B22);
-const Color _cardBgLight = Color(0xFF21262D);
+// Couleurs de marque (identiques dans les deux thèmes)
 const Color _primaryGold = Color(0xFFFFC300);
 const Color _primaryGreen = Color(0xFF4ECDC4);
 const Color _primaryRed = Color(0xFFFF6B6B);
-const Color _textLight = Color(0xFFF0F6FC);
-const Color _textMuted = Color(0xFF8B949E);
-const Color _borderColor = Color(0xFF30363D);
+
+// Couleurs pilotées par le thème global (clair/sombre) via ThemeNotifier
+// (getters sans BuildContext : utilisables aussi dans le CustomPainter).
+Color get _darkBg => ThemeNotifier().isDarkMode ? const Color(0xFF0D1117) : const Color(0xFFF5F6F8);
+Color get _cardBg => ThemeNotifier().isDarkMode ? const Color(0xFF161B22) : Colors.white;
+Color get _cardBgLight => ThemeNotifier().isDarkMode ? const Color(0xFF21262D) : const Color(0xFFEFF1F4);
+Color get _textLight => ThemeNotifier().isDarkMode ? const Color(0xFFF0F6FC) : const Color(0xFF1A1D21);
+Color get _textMuted => ThemeNotifier().isDarkMode ? const Color(0xFF8B949E) : const Color(0xFF6B7280);
+Color get _borderColor => ThemeNotifier().isDarkMode ? const Color(0xFF30363D) : const Color(0xFFE2E5EA);
 
 /// Page de carte globale des coachs (simulation sans flutter_map pour éviter les dépendances)
 class CoachMapPage extends StatefulWidget {
@@ -99,7 +103,7 @@ class _CoachMapPageState extends State<CoachMapPage> {
           icon: const Icon(Icons.arrow_back, color: _primaryGold),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
+        title: Text(
           'Carte des coachs',
           style: TextStyle(
             color: _textLight,
@@ -189,7 +193,7 @@ class _CoachMapPageState extends State<CoachMapPage> {
                               const SizedBox(width: 4),
                               Text(
                                 _isDemoMode ? 'DEMO' : 'PROD',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   color: _darkBg,
                                   fontSize: 10,
                                   fontWeight: FontWeight.bold,
@@ -204,7 +208,7 @@ class _CoachMapPageState extends State<CoachMapPage> {
                       const SizedBox(width: 4),
                       Text(
                         '${_filteredCoaches.length} coachs',
-                        style: const TextStyle(color: _textLight, fontSize: 13),
+                        style: TextStyle(color: _textLight, fontSize: 13),
                       ),
                       const Spacer(),
                       if (_selectedCity != 'Toutes les villes')
@@ -323,7 +327,7 @@ class _CoachMapPageState extends State<CoachMapPage> {
                         ),
                       ),
                       const SizedBox(width: 4),
-                      const Text(
+                      Text(
                         'Coach',
                         style: TextStyle(color: _textMuted, fontSize: 10),
                       ),
@@ -501,7 +505,7 @@ class _CoachMapPageState extends State<CoachMapPage> {
                     Expanded(
                       child: Text(
                         coach.name,
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: _textLight,
                           fontWeight: FontWeight.bold,
                           fontSize: 14,
@@ -519,18 +523,18 @@ class _CoachMapPageState extends State<CoachMapPage> {
                 const SizedBox(height: 4),
                 Row(
                   children: [
-                    const Icon(Icons.location_on, color: _textMuted, size: 12),
+                    Icon(Icons.location_on, color: _textMuted, size: 12),
                     const SizedBox(width: 4),
                     Text(
                       coach.city,
-                      style: const TextStyle(color: _textMuted, fontSize: 11),
+                      style: TextStyle(color: _textMuted, fontSize: 11),
                     ),
                     const SizedBox(width: 8),
                     const Icon(Icons.star, color: _primaryGold, size: 12),
                     const SizedBox(width: 2),
                     Text(
                       coach.rating.toString(),
-                      style: const TextStyle(color: _textLight, fontSize: 11),
+                      style: TextStyle(color: _textLight, fontSize: 11),
                     ),
                   ],
                 ),
@@ -629,7 +633,7 @@ class _CoachMapPageState extends State<CoachMapPage> {
             padding: const EdgeInsets.all(12),
             child: Row(
               children: [
-                const Text(
+                Text(
                   'Liste des coachs',
                   style: TextStyle(
                     color: _textLight,
@@ -640,7 +644,7 @@ class _CoachMapPageState extends State<CoachMapPage> {
                 const Spacer(),
                 Text(
                   '${coaches.length} résultats',
-                  style: const TextStyle(color: _textMuted, fontSize: 12),
+                  style: TextStyle(color: _textMuted, fontSize: 12),
                 ),
               ],
             ),
@@ -648,7 +652,7 @@ class _CoachMapPageState extends State<CoachMapPage> {
           // Liste horizontale
           Expanded(
             child: coaches.isEmpty
-                ? const Center(
+                ? Center(
                     child: Text(
                       'Aucun coach trouvé',
                       style: TextStyle(color: _textMuted),
@@ -737,7 +741,7 @@ class _CoachMapPageState extends State<CoachMapPage> {
                 const SizedBox(width: 2),
                 Text(
                   coach.rating.toString(),
-                  style: const TextStyle(color: _textMuted, fontSize: 10),
+                  style: TextStyle(color: _textMuted, fontSize: 10),
                 ),
               ],
             ),
@@ -770,7 +774,7 @@ class _MapGridPainter extends CustomPainter {
 
     // Texte "France" au centre
     final textPainter = TextPainter(
-      text: const TextSpan(
+      text: TextSpan(
         text: 'FRANCE',
         style: TextStyle(
           color: _textMuted,

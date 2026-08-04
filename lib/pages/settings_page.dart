@@ -11,14 +11,8 @@ import '../main.dart';
 // PAGE PARAMÈTRES - Design Professionnel Noir & Or
 // ═══════════════════════════════════════════════════════════════════════════
 
-// Palette noir/or
-const Color _darkBg = Color(0xFF0D1117);
-const Color _cardBg = Color(0xFF161B22);
-const Color _cardBgLight = Color(0xFF21262D);
+// Couleurs de marque / accents : lisibles dans les deux thèmes → conservées.
 const Color _primaryGold = Color(0xFFFFC300);
-const Color _textLight = Color(0xFFF0F6FC);
-const Color _textMuted = Color(0xFF8B949E);
-const Color _borderColor = Color(0xFF30363D);
 const Color _accentRed = Color(0xFFFF6B6B);
 const Color _accentGreen = Color(0xFF4ECDC4);
 const Color _accentBlue = Color(0xFF58A6FF);
@@ -35,6 +29,14 @@ class _SettingsPageState extends State<SettingsPage> {
   final UserProfileNotifier _profileNotifier = UserProfileNotifier();
   final ThemeNotifier _themeNotifier = ThemeNotifier();
   final UnitsNotifier _unitsNotifier = UnitsNotifier();
+
+  // Couleurs dépendantes du thème (suivent le mode clair/sombre global).
+  Color get _darkBg => Theme.of(context).scaffoldBackgroundColor;
+  Color get _cardBg => Theme.of(context).colorScheme.surface;
+  Color get _cardBgLight => Theme.of(context).colorScheme.surfaceContainerHighest;
+  Color get _textLight => Theme.of(context).colorScheme.onSurface;
+  Color get _textMuted => Theme.of(context).colorScheme.onSurfaceVariant;
+  Color get _borderColor => Theme.of(context).dividerColor;
 
   @override
   void initState() {
@@ -91,7 +93,7 @@ class _SettingsPageState extends State<SettingsPage> {
               child: const Icon(Icons.settings, color: _primaryGold, size: 20),
             ),
             const SizedBox(width: 12),
-            const Text(
+            Text(
               'Paramètres',
               style: TextStyle(fontWeight: FontWeight.w700, color: _textLight),
             ),
@@ -330,7 +332,7 @@ class _SettingsPageState extends State<SettingsPage> {
             child: Center(
               child: Text(
                 profile.name.isNotEmpty ? profile.name[0].toUpperCase() : 'U',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.w800,
                   color: _darkBg,
@@ -346,7 +348,7 @@ class _SettingsPageState extends State<SettingsPage> {
               children: [
                 Text(
                   profile.name,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
                     color: _textLight,
@@ -355,7 +357,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 const SizedBox(height: 4),
                 Text(
                   profile.email,
-                  style: const TextStyle(fontSize: 14, color: _textMuted),
+                  style: TextStyle(fontSize: 14, color: _textMuted),
                 ),
                 const SizedBox(height: 8),
                 Container(
@@ -391,7 +393,7 @@ class _SettingsPageState extends State<SettingsPage> {
               color: _cardBgLight,
               borderRadius: BorderRadius.circular(10),
             ),
-            child: const Icon(Icons.chevron_right, color: _textMuted),
+            child: Icon(Icons.chevron_right, color: _textMuted),
           ),
         ],
       ),
@@ -405,7 +407,7 @@ class _SettingsPageState extends State<SettingsPage> {
         const SizedBox(width: 8),
         Text(
           title,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w700,
             color: _textLight,
@@ -463,7 +465,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     const SizedBox(height: 3),
                     Text(
                       subtitle,
-                      style: const TextStyle(fontSize: 12, color: _textMuted),
+                      style: TextStyle(fontSize: 12, color: _textMuted),
                     ),
                   ],
                 ],
@@ -509,7 +511,7 @@ class _SettingsPageState extends State<SettingsPage> {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
                     color: _textLight,
@@ -519,7 +521,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   const SizedBox(height: 3),
                   Text(
                     subtitle,
-                    style: const TextStyle(fontSize: 12, color: _textMuted),
+                    style: TextStyle(fontSize: 12, color: _textMuted),
                   ),
                 ],
               ],
@@ -554,10 +556,10 @@ class _SettingsPageState extends State<SettingsPage> {
               color: _textMuted.withOpacity(0.15),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(Icons.info_outline, color: _textMuted, size: 22),
+            child: Icon(Icons.info_outline, color: _textMuted, size: 22),
           ),
           const SizedBox(width: 14),
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -569,7 +571,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     color: _textLight,
                   ),
                 ),
-                SizedBox(height: 3),
+                const SizedBox(height: 3),
                 Text(
                   'Ukan v1.0.0 (Build 2024.11)',
                   style: TextStyle(fontSize: 12, color: _textMuted),
@@ -772,7 +774,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
                       color: _textLight,
@@ -781,7 +783,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   const SizedBox(height: 3),
                   Text(
                     subtitle,
-                    style: const TextStyle(fontSize: 12, color: _textMuted),
+                    style: TextStyle(fontSize: 12, color: _textMuted),
                   ),
                 ],
               ),
@@ -845,7 +847,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 const SizedBox(width: 12),
                 Text(
                   'Choisir l\'unité de $title',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
                     color: _textLight,
@@ -927,7 +929,7 @@ class _SettingsPageState extends State<SettingsPage> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
+            Text(
               'Choisir la langue',
               style: TextStyle(
                 fontSize: 18,
@@ -950,7 +952,7 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget _buildLanguageOption(String lang, String flag, bool selected) {
     return ListTile(
       leading: Text(flag, style: const TextStyle(fontSize: 24)),
-      title: Text(lang, style: const TextStyle(color: _textLight)),
+      title: Text(lang, style: TextStyle(color: _textLight)),
       trailing: selected
           ? const Icon(Icons.check_circle, color: _primaryGold)
           : null,
@@ -967,21 +969,21 @@ class _SettingsPageState extends State<SettingsPage> {
       builder: (context) => AlertDialog(
         backgroundColor: _cardBg,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Row(
+        title: Row(
           children: [
-            Icon(Icons.download_rounded, color: _primaryGold),
-            SizedBox(width: 10),
+            const Icon(Icons.download_rounded, color: _primaryGold),
+            const SizedBox(width: 10),
             Text('Exporter mes données', style: TextStyle(color: _textLight)),
           ],
         ),
-        content: const Text(
+        content: Text(
           'Un fichier contenant toutes vos données sera préparé et envoyé à votre adresse email.',
           style: TextStyle(color: _textMuted),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Annuler', style: TextStyle(color: _textMuted)),
+            child: Text('Annuler', style: TextStyle(color: _textMuted)),
           ),
           ElevatedButton(
             onPressed: () {
@@ -1012,14 +1014,14 @@ class _SettingsPageState extends State<SettingsPage> {
             Text('Supprimer mon compte', style: TextStyle(color: _accentRed)),
           ],
         ),
-        content: const Text(
+        content: Text(
           'Cette action est irréversible. Toutes vos données seront définitivement supprimées.',
           style: TextStyle(color: _textMuted),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Annuler', style: TextStyle(color: _textMuted)),
+            child: Text('Annuler', style: TextStyle(color: _textMuted)),
           ),
           ElevatedButton(
             onPressed: () {

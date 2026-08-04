@@ -7,19 +7,22 @@ import 'pages/user_profile_page.dart';
 import 'data/fake_images.dart';
 import 'coach_directory/coach_map_page.dart';
 import 'coach_directory/mock_coaches_data.dart';
+import 'models/theme_notifier.dart';
 
-// Palette moderne et immersive
-const Color _darkBg = Color(0xFF0D1117);
-const Color _cardBg = Color(0xFF161B22);
-const Color _cardBgLight = Color(0xFF21262D);
+// Couleurs de marque / accents (identiques dans les deux thèmes)
 const Color _primaryGold = Color(0xFFFFC300);
 const Color _primaryBlue = Color(0xFF58A6FF);
 const Color _primaryGreen = Color(0xFF4ECDC4);
 const Color _primaryOrange = Color(0xFFFF9F43);
 const Color _primaryPurple = Color(0xFFA855F7);
 const Color _primaryRed = Color(0xFFFF6B6B);
-const Color _textLight = Color(0xFFF0F6FC);
-const Color _textMuted = Color(0xFF8B949E);
+
+// Couleurs pilotées par le thème global (clair/sombre) via ThemeNotifier.
+Color get _darkBg => ThemeNotifier().isDarkMode ? const Color(0xFF0D1117) : const Color(0xFFF5F6F8);
+Color get _cardBg => ThemeNotifier().isDarkMode ? const Color(0xFF161B22) : Colors.white;
+Color get _cardBgLight => ThemeNotifier().isDarkMode ? const Color(0xFF21262D) : const Color(0xFFEFF1F4);
+Color get _textLight => ThemeNotifier().isDarkMode ? const Color(0xFFF0F6FC) : const Color(0xFF1A1D21);
+Color get _textMuted => ThemeNotifier().isDarkMode ? const Color(0xFF8B949E) : const Color(0xFF6B7280);
 
 // Type de résultat de recherche
 enum SearchResultType { coach, user }
@@ -196,7 +199,7 @@ class _CoachDirectoryPageState extends State<CoachDirectoryPage>
                       borderRadius: BorderRadius.circular(10),
                       border: Border.all(color: _cardBgLight, width: 1),
                     ),
-                    child: const Icon(Icons.arrow_back_ios_new, color: _textLight, size: 18),
+                    child: Icon(Icons.arrow_back_ios_new, color: _textLight, size: 18),
                   ),
                   onPressed: () {
                     HapticFeedback.lightImpact();
@@ -232,13 +235,13 @@ class _CoachDirectoryPageState extends State<CoachDirectoryPage>
                                     ),
                                   ],
                                 ),
-                                child: const Icon(Icons.search, color: _darkBg, size: 22),
+                                child: Icon(Icons.search, color: _darkBg, size: 22),
                               ),
                               const SizedBox(width: 12),
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text(
+                                  Text(
                                     'Rechercher',
                                     style: TextStyle(
                                       color: _textLight,
@@ -377,7 +380,7 @@ class _CoachDirectoryPageState extends State<CoachDirectoryPage>
                     children: [
                       Text(
                         specialty,
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: _textLight,
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -462,7 +465,7 @@ class _CoachDirectoryPageState extends State<CoachDirectoryPage>
             child: Icon(Icons.search_off, size: 48, color: _textMuted),
           ),
           const SizedBox(height: 24),
-          const Text(
+          Text(
             'Aucun résultat',
             style: TextStyle(
               color: _textLight,
@@ -518,14 +521,14 @@ class _CoachDirectoryPageState extends State<CoachDirectoryPage>
                 color: _primaryGold,
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: const Icon(Icons.map, color: _darkBg, size: 22),
+              child: Icon(Icons.map, color: _darkBg, size: 22),
             ),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'Voir la carte',
                     style: TextStyle(
                       color: _textLight,
@@ -647,7 +650,7 @@ class _SearchBarDelegate extends SliverPersistentHeaderDelegate {
                   ),
                   child: TextField(
                     controller: searchController,
-                    style: const TextStyle(color: _textLight, fontSize: 15),
+                    style: TextStyle(color: _textLight, fontSize: 15),
                     decoration: InputDecoration(
                       hintText: 'Rechercher...',
                       hintStyle: TextStyle(color: _textMuted.withOpacity(0.5)),
@@ -690,7 +693,7 @@ class _SearchBarDelegate extends SliverPersistentHeaderDelegate {
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: IconButton(
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.map_outlined,
                     color: _darkBg,
                   ),
@@ -771,7 +774,7 @@ class _FilterDropdown extends StatelessWidget {
           isExpanded: true,
           hint: Text(label, style: TextStyle(color: _textMuted, fontSize: 14)),
           dropdownColor: _cardBg,
-          style: const TextStyle(color: _textLight, fontSize: 14),
+          style: TextStyle(color: _textLight, fontSize: 14),
           icon: Icon(Icons.keyboard_arrow_down, color: _textMuted),
           items: [
             DropdownMenuItem(value: null, child: Text('Tous', style: TextStyle(color: _textMuted))),
@@ -905,7 +908,7 @@ class _ModernCoachCard extends StatelessWidget {
                             Expanded(
                               child: Text(
                                 coach.name,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   color: _textLight,
                                   fontSize: 17,
                                   fontWeight: FontWeight.w700,
@@ -1120,7 +1123,7 @@ class _ModernUserCard extends StatelessWidget {
                             Expanded(
                               child: Text(
                                 user.name,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   color: _textLight,
                                   fontSize: 17,
                                   fontWeight: FontWeight.w700,

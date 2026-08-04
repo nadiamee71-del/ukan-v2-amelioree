@@ -9,18 +9,22 @@ class DashboardTab extends StatefulWidget {
   State<DashboardTab> createState() => _DashboardTabState();
 }
 
-// Palette sombre uniforme (identique à FeedPage)
-const Color _darkBg = Color(0xFF0D1117);
-const Color _cardBg = Color(0xFF161B22);
-const Color _cardBgLight = Color(0xFF21262D);
+// Couleurs de marque / accents : lisibles dans les deux thèmes → constantes.
 const Color _primaryGold = Color(0xFFFFC300);
 const Color _primaryOrange = Color(0xFFFF9F43);
 const Color _primaryGreen = Color(0xFF4ECDC4);
 const Color _primaryBlue = Color(0xFF58A6FF);
 const Color _primaryCyan = Color(0xFF22D3EE);
-const Color _textLight = Color(0xFFF0F6FC);
-const Color _textMuted = Color(0xFF8B949E);
-const Color _borderColor = Color(0xFF30363D);
+
+// Couleurs dépendantes du thème global (clair/sombre). Sans BuildContext (ces
+// noms sont partagés dans la bibliothèque ukan_main via `part of`), on lit le
+// singleton ThemeNotifier ; le MaterialApp se reconstruit au changement de mode.
+Color get _darkBg => ThemeNotifier().isDarkMode ? const Color(0xFF0D1117) : const Color(0xFFF5F6F8);
+Color get _cardBg => ThemeNotifier().isDarkMode ? const Color(0xFF161B22) : Colors.white;
+Color get _cardBgLight => ThemeNotifier().isDarkMode ? const Color(0xFF21262D) : const Color(0xFFEFF1F4);
+Color get _textLight => ThemeNotifier().isDarkMode ? const Color(0xFFF0F6FC) : const Color(0xFF1A1D21);
+Color get _textMuted => ThemeNotifier().isDarkMode ? const Color(0xFF8B949E) : const Color(0xFF6B7280);
+Color get _borderColor => ThemeNotifier().isDarkMode ? const Color(0xFF30363D) : const Color(0xFFE2E5EA);
 
 // Couleurs d'accent pour les icônes (conservées mais atténuées)
 const Color _accentPurple = Color(0xFFA855F7);
@@ -622,7 +626,7 @@ class _DashboardTabState extends State<DashboardTab> with TickerProviderStateMix
         
         Text(
           'Mes Objectifs Personnels',
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 13,
             color: _textMuted,
           ),
@@ -672,7 +676,7 @@ class _DashboardTabState extends State<DashboardTab> with TickerProviderStateMix
               ),
             ),
             const SizedBox(width: 12),
-            const Text(
+            Text(
               'Activité de la semaine',
               style: TextStyle(
                 fontSize: 18,
@@ -684,7 +688,7 @@ class _DashboardTabState extends State<DashboardTab> with TickerProviderStateMix
           ],
         ),
         const SizedBox(height: 8),
-        const Text(
+        Text(
           'Nombre de séances par jour (L → D)',
           style: TextStyle(
             fontSize: 13,
@@ -730,7 +734,7 @@ class _DashboardTabState extends State<DashboardTab> with TickerProviderStateMix
               ),
             ),
             const SizedBox(width: 12),
-            const Text(
+            Text(
               'Distance / Pas du jour',
               style: TextStyle(
                 fontSize: 18,
@@ -761,7 +765,7 @@ class _DashboardTabState extends State<DashboardTab> with TickerProviderStateMix
               ),
             ),
             const SizedBox(width: 12),
-            const Text(
+            Text(
               'Sommeil',
               style: TextStyle(
                 fontSize: 18,
@@ -814,7 +818,7 @@ class _DashboardTabState extends State<DashboardTab> with TickerProviderStateMix
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Objectif principal',
                   style: TextStyle(
                     fontSize: 12,
@@ -825,7 +829,7 @@ class _DashboardTabState extends State<DashboardTab> with TickerProviderStateMix
                 const SizedBox(height: 4),
                 Text(
                   profile.mainGoal,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
                     color: _textLight,
@@ -896,7 +900,7 @@ class _DashboardTabState extends State<DashboardTab> with TickerProviderStateMix
                 child: const Icon(Icons.flag_rounded, color: _primaryGold, size: 20),
               ),
               const SizedBox(width: 12),
-              const Text(
+              Text(
                 'Objectifs de la semaine',
                 style: TextStyle(
                   fontSize: 16,
@@ -934,7 +938,7 @@ class _DashboardTabState extends State<DashboardTab> with TickerProviderStateMix
           // Objectifs secondaires (si présents)
           if (profile.secondaryGoals.isNotEmpty) ...[
             const SizedBox(height: 16),
-            const Text(
+            Text(
               'Objectifs secondaires',
               style: TextStyle(
                 fontSize: 12,
@@ -983,7 +987,7 @@ class _DashboardTabState extends State<DashboardTab> with TickerProviderStateMix
               children: [
                 Text(
                   label,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 11,
                     color: _textMuted,
                   ),
@@ -1003,7 +1007,7 @@ class _DashboardTabState extends State<DashboardTab> with TickerProviderStateMix
                     const SizedBox(width: 2),
                     Text(
                       unit,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 10,
                         color: _textMuted,
                       ),
@@ -1087,7 +1091,7 @@ class _DashboardTabState extends State<DashboardTab> with TickerProviderStateMix
                 child: const Icon(Icons.trending_up_rounded, color: _accentGreen, size: 20),
               ),
               const SizedBox(width: 12),
-              const Expanded(
+              Expanded(
                 child: Text(
                   'Progression de mes objectifs',
                   style: TextStyle(
@@ -1132,7 +1136,7 @@ class _DashboardTabState extends State<DashboardTab> with TickerProviderStateMix
             children: [
               Text(
                 '$achievedCount / 4 objectifs atteints',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 13,
                   color: _textMuted,
                   fontWeight: FontWeight.w500,
@@ -1752,7 +1756,7 @@ class _DashboardTabState extends State<DashboardTab> with TickerProviderStateMix
                     child: const Icon(Icons.fitness_center, color: _accentPurple, size: 18),
                   ),
                   const SizedBox(width: 10),
-                  const Expanded(
+                  Expanded(
                     child: Text(
                       'Séances',
                       style: TextStyle(
@@ -1778,7 +1782,7 @@ class _DashboardTabState extends State<DashboardTab> with TickerProviderStateMix
                       color: _accentPurple,
                     ),
                   ),
-                  const Text(
+                  Text(
                     ' / $_targetSessionsPerWeek',
                     style: TextStyle(
                       fontSize: 15,
@@ -1852,7 +1856,7 @@ class _DashboardTabState extends State<DashboardTab> with TickerProviderStateMix
                     child: const Icon(Icons.local_fire_department, color: _accentOrange, size: 18),
                   ),
                   const SizedBox(width: 10),
-                  const Expanded(
+                  Expanded(
                     child: Text(
                       'Calories',
                       style: TextStyle(
@@ -1878,7 +1882,7 @@ class _DashboardTabState extends State<DashboardTab> with TickerProviderStateMix
                       color: _accentOrange,
                     ),
                   ),
-                  const Text(
+                  Text(
                     ' / $_targetCaloriesPerDay',
                     style: TextStyle(
                       fontSize: 15,
@@ -1956,7 +1960,7 @@ class _DashboardTabState extends State<DashboardTab> with TickerProviderStateMix
                       child: const Icon(Icons.water_drop, color: _accentBlue, size: 18),
                     ),
                     const SizedBox(width: 10),
-                    const Expanded(
+                    Expanded(
                       child: Text(
                         'Hydratation',
                         style: TextStyle(
@@ -1984,7 +1988,7 @@ class _DashboardTabState extends State<DashboardTab> with TickerProviderStateMix
                     ),
                     Text(
                       ' / ${waterGoal.toStringAsFixed(1)} L',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w500,
                         color: _textMuted,
@@ -2060,7 +2064,7 @@ class _DashboardTabState extends State<DashboardTab> with TickerProviderStateMix
                       child: const Icon(Icons.restaurant, color: _primaryGold, size: 18),
                     ),
                     const SizedBox(width: 10),
-                    const Expanded(
+                    Expanded(
                       child: Text(
                         'Protéines',
                         style: TextStyle(
@@ -2088,7 +2092,7 @@ class _DashboardTabState extends State<DashboardTab> with TickerProviderStateMix
                     ),
                     Text(
                       ' / $proteinGoal g',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w500,
                         color: _textMuted,
@@ -2246,7 +2250,7 @@ class _DashboardTabState extends State<DashboardTab> with TickerProviderStateMix
                           ),
                           Text(
                             ' / $_stepsGoal',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w500,
                               color: _textMuted,
@@ -2358,7 +2362,7 @@ class _DashboardTabState extends State<DashboardTab> with TickerProviderStateMix
                             const SizedBox(width: 8),
                             Text(
                               'Objectif: ${sleepGoal.toStringAsFixed(0)}h',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 12,
                                 color: _textMuted,
                               ),
@@ -2369,7 +2373,7 @@ class _DashboardTabState extends State<DashboardTab> with TickerProviderStateMix
                       const SizedBox(height: 4),
                       Text(
                         lastSleep != null ? 'Dernière nuit' : 'Aucune donnée',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 13,
                           color: _textMuted,
                         ),

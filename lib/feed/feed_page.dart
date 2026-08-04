@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../models/theme_notifier.dart';
 import 'feed_detail.dart';
 import '../pages/recipe_book_page.dart';
 import '../pages/create_feed_post_page.dart';
@@ -9,18 +10,20 @@ import '../pages/recipe_detail_page.dart';
 import '../models/profile_feed.dart'; // Pour FeedPostType
 import '../pages/notes_page.dart';
 
-// Palette moderne et immersive (uniforme avec le reste de l'app)
-const Color _darkBg = Color(0xFF0D1117);
-const Color _cardBg = Color(0xFF161B22);
-const Color _cardBgLight = Color(0xFF21262D);
+// Couleurs de marque / accents (identiques dans les deux thèmes)
 const Color _primaryGold = Color(0xFFFFC300);
 const Color _primaryBlue = Color(0xFF58A6FF);
 const Color _primaryGreen = Color(0xFF4ECDC4);
 const Color _primaryOrange = Color(0xFFFF9F43);
 const Color _primaryPurple = Color(0xFFA855F7);
 const Color _primaryRed = Color(0xFFFF6B6B);
-const Color _textLight = Color(0xFFF0F6FC);
-const Color _textMuted = Color(0xFF8B949E);
+
+// Couleurs pilotées par le thème global (clair/sombre) via ThemeNotifier.
+Color get _darkBg => ThemeNotifier().isDarkMode ? const Color(0xFF0D1117) : const Color(0xFFF5F6F8);
+Color get _cardBg => ThemeNotifier().isDarkMode ? const Color(0xFF161B22) : Colors.white;
+Color get _cardBgLight => ThemeNotifier().isDarkMode ? const Color(0xFF21262D) : const Color(0xFFEFF1F4);
+Color get _textLight => ThemeNotifier().isDarkMode ? const Color(0xFFF0F6FC) : const Color(0xFF1A1D21);
+Color get _textMuted => ThemeNotifier().isDarkMode ? const Color(0xFF8B949E) : const Color(0xFF6B7280);
 
 // Styles uniformes pour tous les conteneurs
 const double _uniformBorderRadius = 16.0;
@@ -336,8 +339,8 @@ class _FeedPageState extends State<FeedPage> {
                   onPressed: () {
                     _addToBookWithCategory(context, title, imagePath, category);
                   },
-                  backgroundColor: Colors.white,
-                  side: BorderSide(color: Colors.grey.shade300),
+                  backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+                  side: BorderSide(color: Theme.of(context).dividerColor),
                 );
               }).toList(),
             ),
@@ -378,8 +381,8 @@ class _FeedPageState extends State<FeedPage> {
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 8),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
                 child: Text(
                   'Créer',
                   style: TextStyle(
@@ -403,7 +406,7 @@ class _FeedPageState extends State<FeedPage> {
                   ),
                   child: const Icon(Icons.restaurant_menu, color: Colors.white),
                 ),
-                title: const Text(
+                title: Text(
                   'Nouvelle recette',
                   style: TextStyle(fontWeight: FontWeight.w600, color: _textLight),
                 ),
@@ -428,7 +431,7 @@ class _FeedPageState extends State<FeedPage> {
                   ),
                   child: const Icon(Icons.post_add_rounded, color: Colors.black),
                 ),
-                title: const Text(
+                title: Text(
                   'Nouveau post nutrition',
                   style: TextStyle(fontWeight: FontWeight.w600, color: _textLight),
                 ),
@@ -453,7 +456,7 @@ class _FeedPageState extends State<FeedPage> {
                   ),
                   child: const Icon(Icons.fitness_center, color: Colors.white),
                 ),
-                title: const Text(
+                title: Text(
                   'Nouveau post sport',
                   style: TextStyle(fontWeight: FontWeight.w600, color: _textLight),
                 ),
@@ -751,8 +754,8 @@ class _GridItemState extends State<_GridItem> {
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
-            const Padding(
-              padding: EdgeInsets.only(bottom: 12),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
               child: Text(
                 'Commentaires',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: _textLight),
@@ -775,15 +778,15 @@ class _GridItemState extends State<_GridItem> {
               padding: EdgeInsets.fromLTRB(16, 12, 16, MediaQuery.of(context).viewInsets.bottom + 12),
               child: Row(
                 children: [
-                  const CircleAvatar(
+                  CircleAvatar(
                     radius: 16,
-                    backgroundImage: AssetImage('assets/images/coach1_header.png'), // Placeholder avatar
+                    backgroundImage: const AssetImage('assets/images/coach1_header.png'), // Placeholder avatar
                     backgroundColor: _cardBg,
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: TextField(
-                      style: const TextStyle(color: _textLight),
+                      style: TextStyle(color: _textLight),
                       decoration: InputDecoration(
                         hintText: 'Ajouter un commentaire...',
                         hintStyle: TextStyle(color: _textMuted.withOpacity(0.5)),
@@ -829,19 +832,19 @@ class _GridItemState extends State<_GridItem> {
               children: [
                 Row(
                   children: [
-                    Text(author, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: _textLight)),
+                    Text(author, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: _textLight)),
                     const SizedBox(width: 8),
                     Text(time, style: TextStyle(color: _textMuted, fontSize: 12)),
                   ],
                 ),
                 const SizedBox(height: 4),
-                Text(text, style: const TextStyle(fontSize: 14, color: _textLight)),
+                Text(text, style: TextStyle(fontSize: 14, color: _textLight)),
                 const SizedBox(height: 4),
-                const Text('Répondre', style: TextStyle(color: _textMuted, fontSize: 12, fontWeight: FontWeight.w500)),
+                Text('Répondre', style: TextStyle(color: _textMuted, fontSize: 12, fontWeight: FontWeight.w500)),
               ],
             ),
           ),
-          const Icon(Icons.favorite_border, size: 16, color: _textMuted),
+          Icon(Icons.favorite_border, size: 16, color: _textMuted),
         ],
       ),
     );
@@ -901,7 +904,7 @@ class _GridItemState extends State<_GridItem> {
           child: Icon(icon, size: 24, color: _textLight),
         ),
         const SizedBox(height: 8),
-        Text(label, style: const TextStyle(fontSize: 12, color: _textLight)),
+        Text(label, style: TextStyle(fontSize: 12, color: _textLight)),
       ],
     );
   }
@@ -911,12 +914,12 @@ class _GridItemState extends State<_GridItem> {
 class _ActionIcon extends StatelessWidget {
   final IconData icon;
   final VoidCallback onTap;
-  final Color color;
+  final Color? color;
 
   const _ActionIcon({
     required this.icon,
     required this.onTap,
-    this.color = _textLight,
+    this.color,
   });
 
   @override
@@ -937,7 +940,7 @@ class _ActionIcon extends StatelessWidget {
         child: Icon(
           icon,
           size: 14,
-          color: color,
+          color: color ?? _textLight,
         ),
       ),
     );

@@ -4,14 +4,8 @@ import 'package:image_picker/image_picker.dart';
 import '../../models/coach_directory.dart';
 import '../../coach_detail_page.dart';
 
-// Palette sombre uniforme (identique au reste de l'app).
-const Color _darkBg = Color(0xFF0D1117);
-const Color _cardBg = Color(0xFF161B22);
-const Color _cardBgLight = Color(0xFF21262D);
+// Couleur de marque (lisible dans les deux thèmes).
 const Color _primaryGold = Color(0xFFFFC300);
-const Color _textLight = Color(0xFFF0F6FC);
-const Color _textMuted = Color(0xFF8B949E);
-const Color _borderColor = Color(0xFF30363D);
 
 /// Fournit l'ImageProvider adapté selon que le chemin est un asset ou un fichier.
 ImageProvider? coachAvatarProvider(String? photoUrl) {
@@ -39,6 +33,13 @@ class _CoachPublicProfileEditPageState
     extends State<CoachPublicProfileEditPage> {
   final _directory = CoachDirectoryNotifier();
   final _formKey = GlobalKey<FormState>();
+
+  // Couleurs dépendantes du thème (suivent le mode clair/sombre global).
+  Color get _cardBg => Theme.of(context).colorScheme.surface;
+  Color get _cardBgLight => Theme.of(context).colorScheme.surfaceContainerHighest;
+  Color get _textLight => Theme.of(context).colorScheme.onSurface;
+  Color get _textMuted => Theme.of(context).colorScheme.onSurfaceVariant;
+  Color get _borderColor => Theme.of(context).dividerColor;
 
   late final TextEditingController _name;
   late final TextEditingController _specialty;
@@ -171,23 +172,17 @@ class _CoachPublicProfileEditPageState
   Widget build(BuildContext context) {
     if (_notFound) {
       return Scaffold(
-        backgroundColor: _darkBg,
         appBar: AppBar(
-          backgroundColor: _cardBg,
-          foregroundColor: _textLight,
           title: const Text('Mon profil public'),
         ),
-        body: const Center(
+        body: Center(
           child: Text('Coach introuvable', style: TextStyle(color: _textMuted)),
         ),
       );
     }
 
     return Scaffold(
-      backgroundColor: _darkBg,
       appBar: AppBar(
-        backgroundColor: _cardBg,
-        foregroundColor: _textLight,
         elevation: 0,
         centerTitle: true,
         title: const Text(
@@ -249,7 +244,7 @@ class _CoachPublicProfileEditPageState
         padding: const EdgeInsets.only(top: 8, bottom: 10),
         child: Text(
           text.toUpperCase(),
-          style: const TextStyle(
+          style: TextStyle(
             color: _textMuted,
             fontSize: 11,
             fontWeight: FontWeight.w800,
@@ -272,19 +267,19 @@ class _CoachPublicProfileEditPageState
         maxLines: maxLines,
         keyboardType: keyboardType,
         validator: validator,
-        style: const TextStyle(color: _textLight),
+        style: TextStyle(color: _textLight),
         decoration: InputDecoration(
           labelText: label,
-          labelStyle: const TextStyle(color: _textMuted),
+          labelStyle: TextStyle(color: _textMuted),
           filled: true,
           fillColor: _cardBgLight,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(14),
-            borderSide: const BorderSide(color: _borderColor),
+            borderSide: BorderSide(color: _borderColor),
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(14),
-            borderSide: const BorderSide(color: _borderColor),
+            borderSide: BorderSide(color: _borderColor),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(14),
@@ -305,10 +300,10 @@ class _CoachPublicProfileEditPageState
       child: SwitchListTile(
         value: _isCertified,
         activeThumbColor: _primaryGold,
-        title: const Text('Coach certifié',
+        title: Text('Coach certifié',
             style: TextStyle(
                 color: _textLight, fontWeight: FontWeight.w700, fontSize: 14)),
-        subtitle: const Text('Affiche le badge « Coach Certifié »',
+        subtitle: Text('Affiche le badge « Coach Certifié »',
             style: TextStyle(color: _textMuted, fontSize: 12)),
         onChanged: (v) => setState(() => _isCertified = v),
       ),
@@ -327,7 +322,7 @@ class _CoachPublicProfileEditPageState
                 backgroundColor: _cardBgLight,
                 backgroundImage: provider,
                 child: provider == null
-                    ? const Icon(Icons.person, size: 52, color: _textMuted)
+                    ? Icon(Icons.person, size: 52, color: _textMuted)
                     : null,
               ),
               Positioned(
@@ -397,7 +392,7 @@ class _CoachPublicProfileEditPageState
                 style: TextStyle(fontWeight: FontWeight.w700)),
             style: OutlinedButton.styleFrom(
               foregroundColor: _textLight,
-              side: const BorderSide(color: _borderColor, width: 1.5),
+              side: BorderSide(color: _borderColor, width: 1.5),
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14)),
             ),
