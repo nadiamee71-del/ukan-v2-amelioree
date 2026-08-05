@@ -363,26 +363,37 @@ class _CoachDashboardPageState extends State<CoachDashboardPage> {
               // ACTIONS RAPIDES
               // ════════════════════════════════════════════════════════════
               const SizedBox(height: 24),
-              Container(
+              Builder(
+                builder: (context) {
+                  final isDark =
+                      Theme.of(context).brightness == Brightness.dark;
+                  final scheme = Theme.of(context).colorScheme;
+                  return Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      const Color(0xFF1E1E2E),
-                      const Color(0xFF161622),
-                    ],
-                  ),
+                  gradient: isDark
+                      ? const LinearGradient(
+                          colors: [
+                            Color(0xFF1E1E2E),
+                            Color(0xFF161622),
+                          ],
+                        )
+                      : null,
+                  color: isDark ? null : scheme.surface,
                   borderRadius: BorderRadius.circular(20),
+                  border: isDark
+                      ? null
+                      : Border.all(color: scheme.outlineVariant),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Actions rapides',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
-                        color: Colors.white,
+                        color: isDark ? Colors.white : scheme.onSurface,
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -474,6 +485,8 @@ class _CoachDashboardPageState extends State<CoachDashboardPage> {
                     ),
                   ],
                 ),
+              );
+                },
               ),
 
               // ════════════════════════════════════════════════════════════
