@@ -461,7 +461,7 @@ class _CoachDashboardPageState extends State<CoachDashboardPage> {
                     _ActionButton(
                       label: 'Mon profil public',
                       icon: Icons.badge_outlined,
-                      color: const Color(0xFFFFC300),
+                      color: const Color(0xFF145A6E),
                       isPrimary: true,
                       onTap: () {
                         Navigator.of(context).push(
