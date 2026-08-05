@@ -187,7 +187,7 @@ class CoachProgramsNotifier extends ChangeNotifier {
   CoachProgramsNotifier._internal() {
     // Programmes de démo
     _programs.addAll([
-      // Programme Perte de poids - Phase 1 (assigné à Sarah et Marc)
+      // Programme Perte de poids - Phase 1 (assigné à Sarah et Mehdi)
       CoachProgram(
         id: 'program_perte_poids_1',
         title: 'Perte de poids – Phase 1',
@@ -197,7 +197,7 @@ class CoachProgramsNotifier extends ChangeNotifier {
         estimatedMinutes: 45,
         durationWeeks: 8,
         notes: 'Programme adapté pour débuter une perte de poids progressive. Focus sur le cardio et le renforcement musculaire.',
-        assignedClientIds: ['sarah', 'marc'],
+        assignedClientIds: ['sarah', 'mehdi'],
         coachStyleOverride: null, // Utilise le style préféré du client
         exercises: [
           const Exercise(
@@ -264,7 +264,7 @@ class CoachProgramsNotifier extends ChangeNotifier {
         estimatedMinutes: 60,
         durationWeeks: 12,
         notes: 'Programme pour débutants souhaitant prendre de la masse musculaire. Progression progressive.',
-        assignedClientIds: ['jean', 'marie', 'pierre'],
+        assignedClientIds: ['lina', 'marie', 'alex'],
         coachStyleOverride: CoachStyle.hard, // Force le style "dur" pour ce programme
         exercises: [
           const Exercise(
@@ -298,7 +298,7 @@ class CoachProgramsNotifier extends ChangeNotifier {
           ),
         ],
       ),
-      // Programme Remise en forme (sans client assigné pour l'instant)
+      // Programme Remise en forme complète (assigné à l'élève de démonstration current_user)
       CoachProgram(
         id: 'program_remise_forme',
         title: 'Remise en forme complète',
@@ -308,7 +308,7 @@ class CoachProgramsNotifier extends ChangeNotifier {
         estimatedMinutes: 40,
         durationWeeks: 6,
         notes: 'Programme général pour se remettre en forme, combinant cardio et renforcement.',
-        assignedClientIds: [],
+        assignedClientIds: ['current_user'],
         coachStyleOverride: CoachStyle.gentle, // Style bienveillant
         exercises: [
           const Exercise(
